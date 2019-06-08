@@ -18,12 +18,15 @@ class KaldiRecognizer {
     public:
         KaldiRecognizer(Model &model);
         ~KaldiRecognizer();
-        void CleanUp();
         bool AcceptWaveform(const char *data, int len);
         std::string Result();
+        std::string FinalResult();
         std::string PartialResult();
 
     private:
+        void CleanUp();
+        void UpdateSilenceWeights();
+
         Model &model_;
         SingleUtteranceNnet3Decoder *decoder_;
 
@@ -31,5 +34,6 @@ class KaldiRecognizer {
         OnlineNnet2FeaturePipeline *feature_pipeline_;
         OnlineSilenceWeighting *silence_weighting_;
 
+        int32 frame_offset;
         bool input_finalized_;
 };

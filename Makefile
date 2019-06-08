@@ -33,13 +33,13 @@ KALDI_LIBS = \
 	`pkg-config --libs python3` \
 	-lm -lpthread
 
-all: _kaldi_websocket.so
+all: _kaldi_recognizer.so
 
-_kaldi_websocket.so: kaldi_websocket_wrap.cc kaldi_recognizer.cc model.cc
-	$(CXX) $(CXXFLAGS) -shared -o $@ kaldi_recognizer.cc model.cc kaldi_websocket_wrap.cc $(KALDI_LIBS)
+_kaldi_recognizer.so: kaldi_recognizer_wrap.cc kaldi_recognizer.cc model.cc
+	$(CXX) $(CXXFLAGS) -shared -o $@ kaldi_recognizer.cc model.cc kaldi_recognizer_wrap.cc $(KALDI_LIBS)
 
-kaldi_websocket_wrap.cc: kaldi_websocket.i
-	swig -python -c++ -o kaldi_websocket_wrap.cc kaldi_websocket.i
+kaldi_recognizer_wrap.cc: kaldi_recognizer.i
+	swig -python -c++ -o kaldi_recognizer_wrap.cc kaldi_recognizer.i
 
 clean:
-	$(RM) *.so kaldi_websocket_wrap.cc *.o *.pyc kaldi_websocket.py
+	$(RM) *.so kaldi_recognizer_wrap.cc *.o *.pyc kaldi_recognizer.py

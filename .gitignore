@@ -1,0 +1,6 @@
+*.so
+__pycache__
+kaldi_recognizer.py
+kaldi_recognizer_wrap.cc
+*.wav
+model

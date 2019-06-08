@@ -11,7 +11,6 @@ Model::Model() {
         "--beam=13.0",
         "--lattice-beam=6.0",
         "--acoustic-scale=1.0",
-        "--frames-per-chunk=51",
         "--frame-subsampling-factor=3",
 
         "--endpoint.silence-phones=1:2:3:4:5:6:7:8:9:10",

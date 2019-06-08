@@ -1,4 +1,4 @@
-%module kaldi_websocket
+%module kaldi_recognizer
 
 %include <typemaps.i>
 %include <std_string.i>

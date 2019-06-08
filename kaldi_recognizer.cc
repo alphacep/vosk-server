@@ -18,6 +18,7 @@ KaldiRecognizer::KaldiRecognizer(Model &model) : model_(model) {
             *model_.decode_fst_,
             feature_pipeline_);
 
+    frame_offset = 0;
     input_finalized_ = false;
 }
 
@@ -31,27 +32,28 @@ KaldiRecognizer::~KaldiRecognizer() {
 
 void KaldiRecognizer::CleanUp()
 {
-    delete decoder_;
-
-    OnlineIvectorExtractorAdaptationState state(feature_info_->ivector_extractor_info);
-    feature_pipeline_->GetAdaptationState(&state);
-
-    delete feature_pipeline_;
-
-    feature_pipeline_ = new kaldi::OnlineNnet2FeaturePipeline (*feature_info_);
-    feature_pipeline_->SetAdaptationState(state);
-
     delete silence_weighting_;
     silence_weighting_ = new kaldi::OnlineSilenceWeighting(*model_.trans_model_, feature_info_->silence_weighting_config, 3);
 
-    decoder_ = new kaldi::SingleUtteranceNnet3Decoder(model_.nnet3_decoding_config_,
-            *model_.trans_model_,
-            *model_.decodable_info_,
-            *model_.decode_fst_,
-            feature_pipeline_);
+    frame_offset += decoder_->NumFramesDecoded();
+    decoder_->InitDecoding(frame_offset);
 }
 
-bool KaldiRecognizer::AcceptWaveform(const char *data, int len) {
+void KaldiRecognizer::UpdateSilenceWeights()
+{
+    if (silence_weighting_->Active() && feature_pipeline_->NumFramesReady() > 0 &&
+        feature_pipeline_->IvectorFeature() != NULL) {
+        std::vector<std::pair<int32, BaseFloat> > delta_weights;
+        silence_weighting_->ComputeCurrentTraceback(decoder_->Decoder());
+        silence_weighting_->GetDeltaWeights(feature_pipeline_->NumFramesReady(),
+                                          &delta_weights);
+        feature_pipeline_->UpdateFrameWeights(delta_weights,
+                                          frame_offset * 3);
+    }
+}
+
+bool KaldiRecognizer::AcceptWaveform(const char *data, int len) 
+{
 
     if (input_finalized_) {
         CleanUp();
@@ -64,16 +66,7 @@ bool KaldiRecognizer::AcceptWaveform(const char *data, int len) {
         wave(i) = *(((short *)data) + i);
 
     feature_pipeline_->AcceptWaveform(8000, wave);
-
-    if (silence_weighting_->Active() && feature_pipeline_->NumFramesReady() > 0 &&
-        feature_pipeline_->IvectorFeature() != NULL) {
-        std::vector<std::pair<int32, BaseFloat> > delta_weights;
-        silence_weighting_->ComputeCurrentTraceback(decoder_->Decoder());
-        silence_weighting_->GetDeltaWeights(feature_pipeline_->NumFramesReady(),
-                                          &delta_weights);
-        feature_pipeline_->IvectorFeature()->UpdateFrameWeights(delta_weights);
-    }
-
+    UpdateSilenceWeights();
     decoder_->AdvanceDecoding();
 
     if (decoder_->EndpointDetected(model_.endpoint_config_)) {
@@ -87,19 +80,7 @@ std::string KaldiRecognizer::Result()
 {
 
     if (!input_finalized_) {
-        feature_pipeline_->InputFinished();
-
-        if (silence_weighting_->Active() && feature_pipeline_->NumFramesReady() > 0 &&
-            feature_pipeline_->IvectorFeature() != NULL) {
-            std::vector<std::pair<int32, BaseFloat> > delta_weights;
-            silence_weighting_->ComputeCurrentTraceback(decoder_->Decoder());
-            silence_weighting_->GetDeltaWeights(feature_pipeline_->NumFramesReady(),
-                                              &delta_weights);
-            feature_pipeline_->IvectorFeature()->UpdateFrameWeights(delta_weights);
-        }
-        decoder_->AdvanceDecoding();
         decoder_->FinalizeDecoding();
-
         input_finalized_ = true;
     }
 
@@ -142,8 +123,7 @@ std::string KaldiRecognizer::Result()
 
 std::string KaldiRecognizer::PartialResult()
 {
-    decoder_->AdvanceDecoding();
-    if (decoder_->NumFramesDecoded() < 50) {
+    if (decoder_->NumFramesDecoded() == 0) {
         return "{\"partial\" : \"\"}";
     }
 
@@ -164,4 +144,16 @@ std::string KaldiRecognizer::PartialResult()
     outss << "\"}";
 
     return outss.str();
+}
+
+std::string KaldiRecognizer::FinalResult()
+{
+    if (!input_finalized_) {
+        feature_pipeline_->InputFinished();
+        UpdateSilenceWeights();
+        decoder_->AdvanceDecoding();
+        decoder_->FinalizeDecoding();
+        input_finalized_ = true;
+    }
+    return Result();
 }
