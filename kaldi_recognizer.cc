@@ -46,9 +46,9 @@ void KaldiRecognizer::UpdateSilenceWeights()
         std::vector<std::pair<int32, BaseFloat> > delta_weights;
         silence_weighting_->ComputeCurrentTraceback(decoder_->Decoder());
         silence_weighting_->GetDeltaWeights(feature_pipeline_->NumFramesReady(),
+                                          frame_offset * 3,
                                           &delta_weights);
-        feature_pipeline_->UpdateFrameWeights(delta_weights,
-                                          frame_offset * 3);
+        feature_pipeline_->UpdateFrameWeights(delta_weights);
     }
 }
 
