@@ -4,7 +4,7 @@ from kaldi_recognizer import Model, KaldiRecognizer
 import sys
 import json
 
-model = Model()
+model = Model("model")
 rec = KaldiRecognizer(model)
 
 wf = open(sys.argv[1], "rb")

@@ -5,7 +5,7 @@ import pathlib
 import websockets
 from kaldi_recognizer import Model, KaldiRecognizer
 
-model = Model()
+model = Model("model")
 
 async def recognize(websocket, path):
     rec = KaldiRecognizer(model);
