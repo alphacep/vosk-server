@@ -7,7 +7,7 @@ KALDI_FLAGS := -DKALDI_DOUBLEPRECISION=0 -DHAVE_POSIX_MEMALIGN \
 -Wno-sign-compare -Wno-unused-local-typedefs -Winit-self \
 -DHAVE_EXECINFO_H=1 -rdynamic -DHAVE_CXXABI_H -DHAVE_ATLAS \
 -I$(KALDI_ROOT)/tools/ATLAS/include \
--I$(KALDI_ROOT)/tools/openfst/include -I$(KALDI_ROOT)/src 
+-I$(KALDI_ROOT)/tools/openfst/include -I$(KALDI_ROOT)/src
 
 CXXFLAGS := -std=c++11 -g -Wall -DPIC -fPIC $(KALDI_FLAGS) `pkg-config --cflags python3`
 
@@ -39,7 +39,7 @@ _kaldi_recognizer.so: kaldi_recognizer_wrap.cc kaldi_recognizer.cc model.cc
 	$(CXX) $(CXXFLAGS) -shared -o $@ kaldi_recognizer.cc model.cc kaldi_recognizer_wrap.cc $(KALDI_LIBS)
 
 kaldi_recognizer_wrap.cc: kaldi_recognizer.i
-	swig -python -c++ -o kaldi_recognizer_wrap.cc kaldi_recognizer.i
+	swig -threads -python -c++ -o kaldi_recognizer_wrap.cc kaldi_recognizer.i
 
 clean:
 	$(RM) *.so kaldi_recognizer_wrap.cc *.o *.pyc kaldi_recognizer.py
