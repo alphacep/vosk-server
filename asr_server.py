@@ -1,12 +1,18 @@
 #!/usr/bin/env python3
 
+import sys
 import asyncio
 import pathlib
 import websockets
 import concurrent.futures
 from kaldi_recognizer import Model, KaldiRecognizer
 
-model = Model("model")
+if len(sys.argv) > 1:
+   model_path = sys.argv[1]
+else:
+   model_path = "model"
+
+model = Model(model_path)
 pool = concurrent.futures.ThreadPoolExecutor()
 loop = asyncio.get_event_loop()
 
@@ -27,7 +33,7 @@ async def recognize(websocket, path):
         if stop: break
 
 start_server = websockets.serve(
-    recognize, '127.0.0.1', 2609)
+    recognize, '0.0.0.0', 2700)
 
 loop.run_until_complete(start_server)
 loop.run_forever()
