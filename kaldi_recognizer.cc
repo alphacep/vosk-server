@@ -82,6 +82,10 @@ std::string KaldiRecognizer::Result()
         input_finalized_ = true;
     }
 
+    if (decoder_->NumFramesDecoded() == 0) {
+        return "{\"result\" : [], \"text\" : \"\"}";
+    }
+
     kaldi::CompactLattice clat;
     decoder_->GetLattice(true, &clat);
 
