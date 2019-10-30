@@ -10,6 +10,12 @@ Start the server
 docker run -d -p 2700:2700 alphacep/kaldi-en:latest
 ```
 
+or for Chinese
+
+```
+docker run -d -p 2700:2700 alphacep/kaldi-cn:latest
+```
+
 or for Russian
 
 ```

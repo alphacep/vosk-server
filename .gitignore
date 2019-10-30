@@ -1,4 +1,5 @@
 *.so
+*.pyc
 __pycache__
 kaldi_recognizer.py
 kaldi_recognizer_wrap.cc
