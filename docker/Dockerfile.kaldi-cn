@@ -54,4 +54,4 @@ RUN mkdir /opt/kaldi-cn \
 
 EXPOSE 2700
 WORKDIR /opt/kaldi-websocket/kaldi-websocket-python
-CMD [ "python3", "./asr_server.py", "/opt/kaldi-en/model" ]
+CMD [ "python3", "./asr_server.py", "/opt/kaldi-cn/model" ]
