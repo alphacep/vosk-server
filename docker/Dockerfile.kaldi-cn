@@ -45,8 +45,8 @@ RUN mkdir /opt/kaldi-websocket \
    && make clean
 
 ENV MODEL_VERSION 0.1
-RUN mkdir /opt/kaldi-en \
-   && cd /opt/kaldi-en \
+RUN mkdir /opt/kaldi-cn \
+   && cd /opt/kaldi-cn \
    && wget http://alphacephei.com/kaldi/kaldi-cn-${MODEL_VERSION}.tar.gz \
    && tar xf kaldi-cn-${MODEL_VERSION}.tar.gz \
    && mv kaldi-cn-${MODEL_VERSION} model \
