@@ -10,7 +10,7 @@ Start the server
 docker run -d -p 2700:2700 alphacep/kaldi-en:latest
 ```
 
-or for Chinese
+or for Chinese. The model is based on Kaldi multi-cn recipe, thanks to [Xingyu Na](https://github.com/naxingyu).
 
 ```
 docker run -d -p 2700:2700 alphacep/kaldi-cn:latest
