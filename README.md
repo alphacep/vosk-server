@@ -22,6 +22,12 @@ or for Russian
 docker run -d -p 2700:2700 alphacep/kaldi-ru:latest
 ```
 
+or for German (model from https://github.com/uhh-lt/kaldi-tuda-de#pretrained-models)
+
+```
+docker run -d -p 2700:2700 alphacep/kaldi-de:latest
+```
+
 Run
 
 ```

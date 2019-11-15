@@ -17,7 +17,7 @@ KaldiRecognizer::KaldiRecognizer(Model &model) : model_(model) {
             *model_.decode_fst_,
             feature_pipeline_);
 
-    frame_offset = 0;
+    frame_offset_ = 0;
     input_finalized_ = false;
 }
 
@@ -33,8 +33,8 @@ void KaldiRecognizer::CleanUp()
     delete silence_weighting_;
     silence_weighting_ = new kaldi::OnlineSilenceWeighting(*model_.trans_model_, model_.feature_info_.silence_weighting_config, 3);
 
-    frame_offset += decoder_->NumFramesDecoded();
-    decoder_->InitDecoding(frame_offset);
+    frame_offset_ += decoder_->NumFramesDecoded();
+    decoder_->InitDecoding(frame_offset_);
 }
 
 void KaldiRecognizer::UpdateSilenceWeights()
@@ -44,7 +44,7 @@ void KaldiRecognizer::UpdateSilenceWeights()
         std::vector<std::pair<int32, BaseFloat> > delta_weights;
         silence_weighting_->ComputeCurrentTraceback(decoder_->Decoder());
         silence_weighting_->GetDeltaWeights(feature_pipeline_->NumFramesReady(),
-                                          frame_offset * 3,
+                                          frame_offset_ * 3,
                                           &delta_weights);
         feature_pipeline_->UpdateFrameWeights(delta_weights);
     }
@@ -63,7 +63,7 @@ bool KaldiRecognizer::AcceptWaveform(const char *data, int len)
     for (int i = 0; i < len / 2; i++)
         wave(i) = *(((short *)data) + i);
 
-    feature_pipeline_->AcceptWaveform(8000, wave);
+    feature_pipeline_->AcceptWaveform(model_.sample_frequency_, wave);
     UpdateSilenceWeights();
     decoder_->AdvanceDecoding();
 
@@ -105,8 +105,8 @@ std::string KaldiRecognizer::Result()
     // Create JSON object
     ss << "{\"result\" : [ ";
     for (int i = 0; i < size; i++) {
-        ss << "{\"word\": \"" << model_.word_syms_->Find(words[i]) << "\", \"start\" : " << times[i].first << "," <<
-                " \"end\" : " << times[i].second << ", \"conf\" : " << conf[i] << "}";
+        ss << "{\"word\": \"" << model_.word_syms_->Find(words[i]) << "\", \"start\" : " << (frame_offset_ + times[i].first) * 0.03 << "," <<
+                " \"end\" : " << (frame_offset_ + times[i].second) * 0.03 << ", \"conf\" : " << conf[i] << "}";
         if (i != size - 1)
             ss << ",\n";
         else

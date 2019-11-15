@@ -33,6 +33,6 @@ class KaldiRecognizer {
         OnlineNnet2FeaturePipeline *feature_pipeline_;
         OnlineSilenceWeighting *silence_weighting_;
 
-        int32 frame_offset;
+        int32 frame_offset_;
         bool input_finalized_;
 };

@@ -3,4 +3,4 @@
 set -e
 set -x
 
-docker build --file Dockerfile.kaldi-ru --tag alphacep/kaldi-ru:latest .
+docker build --squash --file Dockerfile.kaldi-ru --tag alphacep/kaldi-ru:latest .

@@ -54,7 +54,7 @@ protected:
     kaldi::nnet3::NnetSimpleLoopedComputationOptions decodable_opts_;
 
     kaldi::OnlineNnet2FeaturePipelineInfo feature_info_;
-    kaldi::BaseFloat sample_frequency;
+    kaldi::BaseFloat sample_frequency_;
 
     kaldi::nnet3::DecodableNnetSimpleLoopedInfo *decodable_info_;
     fst::Fst<fst::StdArc> *decode_fst_;
