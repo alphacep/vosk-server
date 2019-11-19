@@ -63,7 +63,7 @@ bool KaldiRecognizer::AcceptWaveform(const char *data, int len)
     for (int i = 0; i < len / 2; i++)
         wave(i) = *(((short *)data) + i);
 
-    feature_pipeline_->AcceptWaveform(model_.sample_frequency_, wave);
+    feature_pipeline_->AcceptWaveform(model_.sample_frequency, wave);
     UpdateSilenceWeights();
     decoder_->AdvanceDecoding();
 
