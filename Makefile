@@ -11,10 +11,10 @@ KALDI_FLAGS := \
 	-I$(KALDI_ROOT)/tools/ATLAS/include \
 	-I$(KALDI_ROOT)/tools/openfst/include -I$(KALDI_ROOT)/src
 
-CXXFLAGS := -std=c++11 -g -Wall -DPIC -fPIC $(KALDI_FLAGS) `pkg-config --cflags python3`
+CXXFLAGS := -std=c++11 -g -Wall -DPIC -fPIC $(KALDI_FLAGS) `python3-config --includes`
 
 KALDI_LIBS = \
-	-rdynamic -Wl,-rpath=$(KALDI_ROOT)/tools/openfst/lib \
+	-rdynamic \
 	$(KALDI_ROOT)/src/online2/kaldi-online2.a \
 	$(KALDI_ROOT)/src/decoder/kaldi-decoder.a \
 	$(KALDI_ROOT)/src/ivector/kaldi-ivector.a \
@@ -30,9 +30,8 @@ KALDI_LIBS = \
 	$(KALDI_ROOT)/src/fstext/kaldi-fstext.a \
 	$(KALDI_ROOT)/src/util/kaldi-util.a \
 	$(KALDI_ROOT)/src/base/kaldi-base.a \
-	-L $(KALDI_ROOT)/tools/openfst/lib -lfst \
+	$(KALDI_ROOT)/tools/openfst/lib/libfst.a \
 	$(ATLASLIBS) \
-	`pkg-config --libs python3` \
 	-lm -lpthread
 
 all: _kaldi_recognizer.so
