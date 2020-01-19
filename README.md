@@ -39,4 +39,4 @@ Other formats has to be converted before decoding.
 
 ## Other programming languages
 
-See https://github.com/alphacep/api-samples
+Check other examples (Asterisk-EAGI, php, node, c#) in client-samples folder in this repository.

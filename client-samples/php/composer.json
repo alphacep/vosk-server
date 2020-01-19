@@ -1,0 +1,7 @@
+{
+    "require": {
+        "textalk/websocket": "1.0.*",
+        "marcelog/pagi": "2.*"
+    }
+}
+
