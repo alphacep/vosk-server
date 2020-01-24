@@ -1,7 +1,20 @@
-Docker build for the server with Russian model
+Final Docker images, each containing the Websocket server and the language model.
 
-To run it in your environment simply try 
+We are building an intermediate image for each language containing only the architecture-independent data files.
+Docker caching of these intermediate stages means that we avoid needlessly downloading the same large file several times.
 
-    sudo docker run -p 2700:2700 alphacep/kaldi-ru:latest
+The model is placed into `/opt/kaldi-model`. See `model.cc` to grok which files are required:
 
-the service will be exposed on port 2700
+```
+final.mdl
+HCLG.fst
+ivector/final.dubm
+ivector/final.ie
+ivector/final.mat
+ivector/global_cmvn.stats
+ivector/online_cmvn.conf
+ivector/splice.conf
+mfcc.conf
+word_boundary.int
+words.txt
+```

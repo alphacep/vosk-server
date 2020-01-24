@@ -1,21 +1,27 @@
-FROM alphacep/kaldi-vosk-server:latest
+ARG BASE_IMAGE=alphacep/kaldi-vosk-server:latest
 
-ENV RUVERSION 0.6
-RUN mkdir /opt/kaldi-ru \
-   && cd /opt/kaldi-ru \
-   && wget http://alphacephei.com/kaldi/kaldi-ru-${RUVERSION}.tar.gz \
-   && tar xf kaldi-ru-${RUVERSION}.tar.gz \
-   && mkdir -p model \
-   && mv kaldi-ru-${RUVERSION}/exp/tdnn/ivector_extractor model/ivector \
-   && mv kaldi-ru-${RUVERSION}/exp/tdnn/conf/mfcc.conf model \
-   && mv kaldi-ru-${RUVERSION}/exp/tdnn/conf/splice.conf model/ivector \
-   && mv kaldi-ru-${RUVERSION}/exp/tdnn/graph/HCLG.fst model \
-   && mv kaldi-ru-${RUVERSION}/exp/tdnn/graph/words.txt model \
-   && mv kaldi-ru-${RUVERSION}/data/lang_test_rescore/phones/word_boundary.int model \
-   && mv kaldi-ru-${RUVERSION}/exp/tdnn/final.mdl model \
-   && rm -rf kaldi-ru-${RUVERSION} \
-   && rm -rf kaldi-ru-${RUVERSION}.tar.gz
+###
 
-EXPOSE 2700
-WORKDIR /opt/kaldi-websocket-python
-CMD [ "python3", "./asr_server.py", "/opt/kaldi-ru/model" ]
+FROM alpine AS build
+
+WORKDIR /opt/kaldi-model
+
+RUN apk add -U wget tar
+RUN set -o pipefail \
+   && mkdir temp \
+   && wget -q -O - https://alphacephei.com/kaldi/kaldi-ru-0.6.tar.gz \
+   | tar xz --strip-components=1 -C temp \
+   && mv temp/exp/tdnn/ivector_extractor ivector \
+   && mv temp/exp/tdnn/conf/mfcc.conf . \
+   && mv temp/exp/tdnn/conf/splice.conf ivector \
+   && mv temp/exp/tdnn/graph/HCLG.fst . \
+   && mv temp/exp/tdnn/graph/words.txt . \
+   && mv temp/data/lang_test_rescore/phones/word_boundary.int . \
+   && mv temp/exp/tdnn/final.mdl . \
+   && rm -rf temp
+
+###
+
+FROM $BASE_IMAGE
+COPY --from=build /opt/kaldi-model /opt/kaldi-model
+CMD ["/opt/kaldi-model"]

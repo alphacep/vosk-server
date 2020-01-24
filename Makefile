@@ -2,13 +2,14 @@ KALDI_ROOT ?= $(HOME)/kaldi
 
 CXX := g++
 
-ATLASLIBS := /usr/lib/libatlas.so.3 /usr/lib/libf77blas.so.3 /usr/lib/libcblas.so.3 /usr/lib/liblapack_atlas.so.3
+ATLAS_ROOT ?= /usr
+ATLASLIBS := $(ATLAS_ROOT)/lib/libatlas.so.3 $(ATLAS_ROOT)/lib/libf77blas.so.3 $(ATLAS_ROOT)/lib/libcblas.so.3 $(ATLAS_ROOT)/lib/liblapack_atlas.so.3
 
 KALDI_FLAGS := \
 	-DKALDI_DOUBLEPRECISION=0 -DHAVE_POSIX_MEMALIGN \
 	-Wno-sign-compare -Wno-unused-local-typedefs -Winit-self \
 	-DHAVE_EXECINFO_H=1 -rdynamic -DHAVE_CXXABI_H -DHAVE_ATLAS \
-	-I$(KALDI_ROOT)/tools/ATLAS/include \
+	-I$(ATLAS_ROOT)/include \
 	-I$(KALDI_ROOT)/tools/openfst/include -I$(KALDI_ROOT)/src
 
 CXXFLAGS := -std=c++11 -g -Wall -DPIC -fPIC $(KALDI_FLAGS) `python3-config --includes`

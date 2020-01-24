@@ -1,13 +1,17 @@
-FROM alphacep/kaldi-vosk-server:latest
+ARG BASE_IMAGE=alphacep/kaldi-vosk-server:latest
 
-ENV MODEL_VERSION 0.1
-RUN mkdir /opt/kaldi-cn \
-   && cd /opt/kaldi-cn \
-   && wget http://alphacephei.com/kaldi/kaldi-cn-${MODEL_VERSION}.tar.gz \
-   && tar xf kaldi-cn-${MODEL_VERSION}.tar.gz \
-   && mv kaldi-cn-${MODEL_VERSION} model \
-   && rm -rf kaldi-cn-${MODEL_VERSION}.tar.gz
+###
+FROM alpine AS build
 
-EXPOSE 2700
-WORKDIR /opt/kaldi-websocket-python
-CMD [ "python3", "./asr_server.py", "/opt/kaldi-cn/model" ]
+WORKDIR /opt/kaldi-model
+
+RUN apk add -U wget tar
+RUN set -o pipefail \
+   && wget -q -O - https://alphacephei.com/kaldi/kaldi-cn-0.1.tar.gz \
+   | tar xz --strip-components=1
+
+###
+
+FROM $BASE_IMAGE
+COPY --from=build /opt/kaldi-model /opt/kaldi-model
+CMD ["/opt/kaldi-model"]
