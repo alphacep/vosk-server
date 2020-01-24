@@ -37,6 +37,17 @@ Run
 You can try with any wav file which has proper format - 8khz 16bit mono PCM.
 Other formats has to be converted before decoding.
 
+## Testing with microphone
+
+You would need to install the pyaudio pip package:
+
+```
+pip install pyaudio
+```
+
+(on Windows, it's easiest to install the wheel from [here](https://www.lfd.uci.edu/~gohlke/pythonlibs/#pyaudio)).
+
+
 To test with a microphone, run
 
 ```
@@ -58,7 +69,6 @@ Terminating connection
 {"result" : [  ], "text" : "" }
 Bye
 ```
-You would need to install the pyaudio PIP package (on Windows, it's easiest to install the wheel from [here](https://www.lfd.uci.edu/~gohlke/pythonlibs/#pyaudio)).
 
 ## Other programming languages
 
