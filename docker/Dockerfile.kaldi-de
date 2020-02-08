@@ -21,5 +21,5 @@ RUN mkdir /opt/kaldi-de \
    && rm -rf de_400k_nnet3chain_tdnn1f_2048_sp_bi.tar.bz2
 
 EXPOSE 2700
-WORKDIR /opt/kaldi-websocket-python
+WORKDIR /opt/vosk-server
 CMD [ "python3", "./asr_server.py", "/opt/kaldi-de" ]

@@ -9,5 +9,5 @@ RUN mkdir /opt/kaldi-cn \
    && rm -rf kaldi-cn-${MODEL_VERSION}.tar.gz
 
 EXPOSE 2700
-WORKDIR /opt/kaldi-websocket-python
+WORKDIR /opt/vosk-server
 CMD [ "python3", "./asr_server.py", "/opt/kaldi-cn/model" ]

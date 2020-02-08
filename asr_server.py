@@ -5,7 +5,7 @@ import asyncio
 import pathlib
 import websockets
 import concurrent.futures
-from kaldi_recognizer import Model, KaldiRecognizer
+from vosk import Model, KaldiRecognizer
 
 if len(sys.argv) > 1:
    model_path = sys.argv[1]
@@ -25,7 +25,7 @@ def process_chunk(rec, message):
         return rec.PartialResult(), False
 
 async def recognize(websocket, path):
-    rec = KaldiRecognizer(model);
+    rec = KaldiRecognizer(model, 8000);
     while True:
         message = await websocket.recv()
         response, stop = await loop.run_in_executor(pool, process_chunk, rec, message)

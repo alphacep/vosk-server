@@ -17,5 +17,5 @@ RUN mkdir /opt/kaldi-ru \
    && rm -rf kaldi-ru-${RUVERSION}.tar.gz
 
 EXPOSE 2700
-WORKDIR /opt/kaldi-websocket-python
+WORKDIR /opt/vosk-server
 CMD [ "python3", "./asr_server.py", "/opt/kaldi-ru/model" ]
