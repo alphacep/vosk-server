@@ -20,6 +20,8 @@ RUN mkdir /opt/kaldi-de \
    && rm -rf de_400k_nnet3chain_tdnn1f_2048_sp_bi \
    && rm -rf de_400k_nnet3chain_tdnn1f_2048_sp_bi.tar.bz2
 
+RUN sed -i 's:8000:16000:g' /opt/vosk-server/asr_server.py
+
 EXPOSE 2700
 WORKDIR /opt/vosk-server
 CMD [ "python3", "./asr_server.py", "/opt/kaldi-de" ]
