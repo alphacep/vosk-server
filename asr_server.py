@@ -8,12 +8,14 @@ import websockets
 import concurrent.futures
 from vosk import Model, KaldiRecognizer
 
-if len(sys.argv) > 1:
-   model_path = sys.argv[1]
-else:
-   model_path = "model"
+vosk_interface = os.environ.get('VOSK_SERVER_INTERFACE', '0.0.0.0')
+vosk_port = int(os.environ.get('VOSK_SERVER_PORT', 2700))
+vosk_model_path = os.environ.get('VOSK_MODEL_PATH', 'model')
 
-model = Model(model_path)
+if len(sys.argv) > 1:
+   vosk_model_path = sys.argv[1]
+
+model = Model(vosk_model_path)
 pool = concurrent.futures.ThreadPoolExecutor()
 loop = asyncio.get_event_loop()
 
@@ -33,10 +35,8 @@ async def recognize(websocket, path):
         await websocket.send(response)
         if stop: break
 
-port = int(os.environ.get("PORT", 2700))
-
 start_server = websockets.serve(
-    recognize, '0.0.0.0', port)
+    recognize, vosk_interface, vosk_port)
 
 loop.run_until_complete(start_server)
 loop.run_forever()
