@@ -9,5 +9,5 @@ RUN mkdir /opt/kaldi-en \
    && rm -rf kaldi-en-us-aspire-${MODEL_VERSION}.tar.gz
 
 EXPOSE 2700
-WORKDIR /opt/vosk-server
+WORKDIR /opt/vosk-server/websocket
 CMD [ "python3", "./asr_server.py", "/opt/kaldi-en/model" ]
