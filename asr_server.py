@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import os
 import sys
 import asyncio
 import pathlib
@@ -32,8 +33,10 @@ async def recognize(websocket, path):
         await websocket.send(response)
         if stop: break
 
+port = int(os.environ.get("PORT", 2700))
+
 start_server = websockets.serve(
-    recognize, '0.0.0.0', 2700)
+    recognize, '0.0.0.0', port)
 
 loop.run_until_complete(start_server)
 loop.run_forever()
