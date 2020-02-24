@@ -1,0 +1,19 @@
+<div style="padding:20px" class="mat-app-background">
+<div fxFlex fxLayout="column" fxLayoutGap="20px">
+<div>
+<h3>Angular Speech Demo</h3>
+</div>
+<div>
+  <button mat-raised-button color="primary" id="btnStart" (click)="switchSpeechRecognition()">
+    {{ buttonText }}
+  </button>
+</div>
+<div>
+<form>
+  <mat-form-field fxFlex="60">
+    <textarea #results name="results" [(ngModel)]="textData" readonly matInput rows="11"></textarea>
+  </mat-form-field>
+</form>
+</div>
+</div>
+</div>
