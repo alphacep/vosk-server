@@ -3,7 +3,7 @@ FROM alphacep/kaldi-vosk-server:latest
 ENV MODEL_VERSION 0.1
 RUN mkdir /opt/kaldi-en \
    && cd /opt/kaldi-en \
-   && wget http://alphacephei.com/kaldi/kaldi-en-us-aspire-${MODEL_VERSION}.tar.gz \
+   && wget -q http://alphacephei.com/kaldi/kaldi-en-us-aspire-${MODEL_VERSION}.tar.gz \
    && tar xf kaldi-en-us-aspire-${MODEL_VERSION}.tar.gz \
    && mv kaldi-en-us-aspire-${MODEL_VERSION} model \
    && rm -rf kaldi-en-us-aspire-${MODEL_VERSION}.tar.gz

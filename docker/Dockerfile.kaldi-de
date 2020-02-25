@@ -3,7 +3,7 @@ FROM alphacep/kaldi-vosk-server:latest
 ENV MODEL_VERSION 0.1
 RUN mkdir /opt/kaldi-de \
    && cd /opt/kaldi-de \
-   && wget http://ltdata1.informatik.uni-hamburg.de/kaldi_tuda_de/de_400k_nnet3chain_tdnn1f_2048_sp_bi.tar.bz2 \
+   && wget -q http://ltdata1.informatik.uni-hamburg.de/kaldi_tuda_de/de_400k_nnet3chain_tdnn1f_2048_sp_bi.tar.bz2 \
    && tar xf de_400k_nnet3chain_tdnn1f_2048_sp_bi.tar.bz2 \
    && mkdir ivector \
    && mv de_400k_nnet3chain_tdnn1f_2048_sp_bi/HCLG.fst . \

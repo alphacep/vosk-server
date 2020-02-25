@@ -3,7 +3,7 @@ FROM alphacep/kaldi-vosk-server:latest
 ENV RUVERSION 0.6
 RUN mkdir /opt/kaldi-ru \
    && cd /opt/kaldi-ru \
-   && wget http://alphacephei.com/kaldi/kaldi-ru-${RUVERSION}.tar.gz \
+   && wget -q http://alphacephei.com/kaldi/kaldi-ru-${RUVERSION}.tar.gz \
    && tar xf kaldi-ru-${RUVERSION}.tar.gz \
    && mkdir -p model \
    && mv kaldi-ru-${RUVERSION}/exp/tdnn/ivector_extractor model/ivector \
