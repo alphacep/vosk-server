@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import json
 import os
 import sys
 import asyncio
@@ -28,9 +29,31 @@ def process_chunk(rec, message):
         return rec.PartialResult(), False
 
 async def recognize(websocket, path):
-    rec = KaldiRecognizer(model, 8000);
+
+    rec = None
+    word_list = None
+    sample_rate = 8000.0
+
     while True:
+
         message = await websocket.recv()
+
+        # Load configuration if provided
+        if isinstance(message, str) and 'config' in message:
+            jobj = json.loads(message)['config']
+            if 'word_list' in jobj:
+                word_list = jobj['word_list']
+            if 'sample_rate' in jobj:
+                sample_rate = float(jobj['sample_rate'])
+            continue
+
+        # Create the recognizer, word list is temporary disabled since not every model supports it
+        if not rec:
+            if False and word_list:
+                 rec = KaldiRecognizer(model, sample_rate, word_list)
+            else:
+                 rec = KaldiRecognizer(model, sample_rate)
+
         response, stop = await loop.run_in_executor(pool, process_chunk, rec, message)
         await websocket.send(response)
         if stop: break
