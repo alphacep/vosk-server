@@ -38,6 +38,9 @@ RUN \
 
 RUN \
     git clone https://github.com/alphacep/vosk-api /opt/vosk-api \
+    && sed -i 's:--max-active=3000:--max-active=7000:g' /opt/vosk-api/src/model.cc \
+    && sed -i 's:--beam=10.0:--beam=13.0:g' /opt/vosk-api/src/model.cc \
+    && sed -i 's:--lattice-beam=2.0:--lattice-beam=6.0:g' /opt/vosk-api/src/model.cc \
     && cd /opt/vosk-api/python \
     && KALDI_ROOT=/opt/kaldi python3 ./setup.py install --user --single-version-externally-managed --root=/ \
     && git clone https://github.com/alphacep/vosk-server /opt/vosk-server \
