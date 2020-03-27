@@ -29,6 +29,8 @@ docker run -d -p 2700:2700 alphacep/kaldi-de:latest
 Run
 
 ```
+git clone https://github.com/alphacep/vosk-server
+cd vosk-server/websocket
 ./test.py test.wav
 ```
 
