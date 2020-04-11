@@ -1,0 +1,33 @@
+FROM alphacep/kaldi-vosk-server-en-atom:latest
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+      xz-utils \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN \
+   rm -rf /opt/kaldi-en \
+   && mkdir /opt/kaldi-fr \
+   && cd /opt/kaldi-fr \
+   && wget https://github.com/pguyot/zamia-speech/releases/download/20190930/kaldi-generic-fr-tdnn_f-r20191016.tar.xz \
+   && tar xf kaldi-generic-fr-tdnn_f-r20191016.tar.xz \
+   && mkdir -p model/ivector \
+   && mv kaldi-generic-fr-tdnn_f-r20191016/extractor/final.* model/ivector \
+   && mv kaldi-generic-fr-tdnn_f-r20191016/extractor/global_cmvn.stats model/ivector \
+   && mv kaldi-generic-fr-tdnn_f-r20191016/ivectors_test_hires/conf/online_cmvn.conf model/ivector \
+   && mv kaldi-generic-fr-tdnn_f-r20191016/ivectors_test_hires/conf/splice.conf model/ivector \
+   \
+   && mv kaldi-generic-fr-tdnn_f-r20191016/conf/mfcc_hires.conf model/mfcc.conf \
+   && mv kaldi-generic-fr-tdnn_f-r20191016/model/final.mdl model \
+   && mv kaldi-generic-fr-tdnn_f-r20191016/model/graph/HCLG.fst model \
+   && mv kaldi-generic-fr-tdnn_f-r20191016/model/graph/words.txt model \
+   && mv kaldi-generic-fr-tdnn_f-r20191016/model/graph/phones/word_boundary.int model \
+   \
+   && rm -rf kaldi-generic-fr-tdnn_f-r20191016 \
+   && rm -rf kaldi-generic-fr-tdnn_f-r20191016.tar.xz
+
+RUN sed -i 's:8000:16000:g' /opt/vosk-server/websocket/asr_server.py
+
+EXPOSE 2700
+WORKDIR /opt/vosk-server/websocket
+CMD [ "python3", "./asr_server.py", "/opt/kaldi-fr/model" ]
