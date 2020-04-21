@@ -1,0 +1,14 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+     implementation 'com.neovisionaries:nv-websocket-client:2.9'
+}
+
+mainClassName = 'VoskClient'
