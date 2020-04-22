@@ -3,7 +3,10 @@
 set -e
 set -x
 
-docker build --squash --file Dockerfile.kaldi-vosk-server --tag alphacep/kaldi-vosk-server:latest .
-for lang in ru en de cn; do
-    docker build --squash --file Dockerfile.kaldi-${lang} --tag alphacep/kaldi-${lang}:latest .
+#for kind in vosk-server ru en de cn vosk-server-en-atom vosk-server-fr-atom ; do
+#    docker build --squash --file Dockerfile.kaldi-${kind} --tag alphacep/kaldi-${kind}:latest .
+#done
+
+for kind in vosk-server ru en de cn vosk-server-en-atom vosk-server-fr-atom ; do
+    docker push alphacep/kaldi-${kind}:latest
 done

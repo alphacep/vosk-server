@@ -1,4 +1,6 @@
-A very simple websocket server based on Kaldi and Vosk bindings
+A very simple server based on [Vosk-API](https://github.com/alphacep/vosk-api).
+
+There are three implementations for different protocol - websocket, grpc, mqtt.
 
 ## Usage
 
@@ -72,4 +74,4 @@ Bye
 
 ## Other programming languages
 
-Check other examples (Asterisk-EAGI, php, node, c#) in client-samples folder in this repository.
+Check other examples (Asterisk-EAGI, php, java, node, c#) in client-samples folder in this repository.
