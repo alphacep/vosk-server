@@ -1,0 +1,21 @@
+FROM alphacep/kaldi-vosk-server-atom:latest
+
+ENV RUVERSION 0.8
+RUN mkdir /opt/kaldi-ru \
+   && cd /opt/kaldi-ru \
+   && wget -q http://alphacephei.com/kaldi/kaldi-ru-${RUVERSION}.tar.gz \
+   && tar xf kaldi-ru-${RUVERSION}.tar.gz \
+   && mkdir -p model \
+   && mv kaldi-ru-${RUVERSION}/exp/tdnn/ivector_extractor model/ivector \
+   && mv kaldi-ru-${RUVERSION}/exp/tdnn/conf/mfcc.conf model \
+   && mv kaldi-ru-${RUVERSION}/exp/tdnn/conf/splice.conf model/ivector \
+   && mv kaldi-ru-${RUVERSION}/exp/tdnn/graph/HCLG.fst model \
+   && mv kaldi-ru-${RUVERSION}/exp/tdnn/graph/words.txt model \
+   && mv kaldi-ru-${RUVERSION}/data/lang_test_rescore/phones/word_boundary.int model \
+   && mv kaldi-ru-${RUVERSION}/exp/tdnn/final.mdl model \
+   && rm -rf kaldi-ru-${RUVERSION} \
+   && rm -rf kaldi-ru-${RUVERSION}.tar.gz
+
+EXPOSE 2700
+WORKDIR /opt/vosk-server/websocket
+CMD [ "python3", "./asr_server.py", "/opt/kaldi-ru/model" ]

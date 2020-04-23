@@ -1,4 +1,4 @@
-FROM alphacep/kaldi-vosk-server-en-atom:latest
+FROM alphacep/kaldi-vosk-server-atom:latest
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
@@ -6,8 +6,7 @@ RUN apt-get update && \
     && rm -rf /var/lib/apt/lists/*
 
 RUN \
-   rm -rf /opt/kaldi-en \
-   && mkdir /opt/kaldi-fr \
+   mkdir /opt/kaldi-fr \
    && cd /opt/kaldi-fr \
    && wget https://github.com/pguyot/zamia-speech/releases/download/20190930/kaldi-generic-fr-tdnn_f-r20191016.tar.xz \
    && tar xf kaldi-generic-fr-tdnn_f-r20191016.tar.xz \
