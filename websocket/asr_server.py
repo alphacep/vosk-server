@@ -7,7 +7,13 @@ import asyncio
 import pathlib
 import websockets
 import concurrent.futures
+import logging
 from vosk import Model, KaldiRecognizer
+
+# Enable loging if needed
+# logger = logging.getLogger('websockets')
+# logger.setLevel(logging.INFO)
+# logger.addHandler(logging.StreamHandler())
 
 vosk_interface = os.environ.get('VOSK_SERVER_INTERFACE', '0.0.0.0')
 vosk_port = int(os.environ.get('VOSK_SERVER_PORT', 2700))
