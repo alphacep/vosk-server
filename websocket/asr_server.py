@@ -10,6 +10,10 @@ import concurrent.futures
 import logging
 from vosk import Model, KaldiRecognizer
 
+# Uncomment for better memory usage
+# import gc
+# gc.set_threshold(0)
+
 # Enable loging if needed
 # logger = logging.getLogger('websockets')
 # logger.setLevel(logging.INFO)
