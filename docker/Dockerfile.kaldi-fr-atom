@@ -8,7 +8,7 @@ RUN apt-get update && \
 RUN \
    mkdir /opt/kaldi-fr \
    && cd /opt/kaldi-fr \
-   && wget https://github.com/pguyot/zamia-speech/releases/download/20190930/kaldi-generic-fr-tdnn_f-r20191016.tar.xz \
+   && wget -q https://github.com/pguyot/zamia-speech/releases/download/20190930/kaldi-generic-fr-tdnn_f-r20191016.tar.xz \
    && tar xf kaldi-generic-fr-tdnn_f-r20191016.tar.xz \
    && mkdir -p model/ivector \
    && mv kaldi-generic-fr-tdnn_f-r20191016/extractor/final.* model/ivector \

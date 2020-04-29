@@ -1,18 +1,13 @@
 FROM alphacep/kaldi-vosk-server:latest
 
-ENV RUVERSION 0.8
+ENV RUVERSION 0.10
 RUN mkdir /opt/kaldi-ru \
    && cd /opt/kaldi-ru \
    && wget -q http://alphacephei.com/kaldi/kaldi-ru-${RUVERSION}.tar.gz \
    && tar xf kaldi-ru-${RUVERSION}.tar.gz \
-   && mkdir -p model \
-   && mv kaldi-ru-${RUVERSION}/exp/tdnn/ivector_extractor model/ivector \
-   && mv kaldi-ru-${RUVERSION}/exp/tdnn/conf/mfcc.conf model \
-   && mv kaldi-ru-${RUVERSION}/exp/tdnn/conf/splice.conf model/ivector \
-   && mv kaldi-ru-${RUVERSION}/exp/tdnn/graph/HCLG.fst model \
-   && mv kaldi-ru-${RUVERSION}/exp/tdnn/graph/words.txt model \
-   && mv kaldi-ru-${RUVERSION}/data/lang_test_rescore/phones/word_boundary.int model \
-   && mv kaldi-ru-${RUVERSION}/exp/tdnn/final.mdl model \
+   && mv kaldi-ru-${RUVERSION} model \
+   && rm -rf model/extra \
+   && rm -rf model/rnnlm \
    && rm -rf kaldi-ru-${RUVERSION} \
    && rm -rf kaldi-ru-${RUVERSION}.tar.gz
 
