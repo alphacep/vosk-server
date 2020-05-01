@@ -11,10 +11,12 @@ import logging
 from vosk import Model, KaldiRecognizer
 
 # Uncomment for better memory usage
+#
 # import gc
 # gc.set_threshold(0)
 
 # Enable loging if needed
+#
 # logger = logging.getLogger('websockets')
 # logger.setLevel(logging.INFO)
 # logger.addHandler(logging.StreamHandler())
@@ -25,6 +27,14 @@ vosk_model_path = os.environ.get('VOSK_MODEL_PATH', 'model')
 
 if len(sys.argv) > 1:
    vosk_model_path = sys.argv[1]
+
+# Gpu part, uncomment if vosk-api has gpu support
+#
+# from vosk import GpuInit, GpuInstantiate
+# GpuInit()
+# def thread_init():
+#     GpuInstantiate()
+# pool = concurrent.futures.ThreadPoolExecutor(initializer=thread_init)
 
 model = Model(vosk_model_path)
 pool = concurrent.futures.ThreadPoolExecutor()
