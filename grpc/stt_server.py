@@ -17,6 +17,8 @@
 """The Python implementation of the gRPC route guide server."""
 
 from concurrent import futures
+import os
+import sys
 import time
 import math
 import logging
@@ -29,11 +31,22 @@ from google.protobuf import duration_pb2
 
 from vosk import Model, KaldiRecognizer
 
+# Uncomment for better memory usage
+# import gc
+# gc.set_threshold(0)
+
+vosk_interface = os.environ.get('VOSK_SERVER_INTERFACE', '0.0.0.0')
+vosk_port = int(os.environ.get('VOSK_SERVER_PORT', 5001))
+vosk_model_path = os.environ.get('VOSK_MODEL_PATH', 'model')
+
+if len(sys.argv) > 1:
+   vosk_model_path = sys.argv[1]
+
 class SttServiceServicer(stt_service_pb2_grpc.SttServiceServicer):
     """Provides methods that implement functionality of route guide server."""
 
     def __init__(self):
-        self.model = Model("model")
+        self.model = Model(vosk_model_path)
 
     def get_duration(self, x):
         seconds = int(x)
@@ -71,10 +84,10 @@ class SttServiceServicer(stt_service_pb2_grpc.SttServiceServicer):
         yield self.get_response(recognizer.FinalResult())
 
 def serve():
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+    server = grpc.server(futures.ThreadPoolExecutor())
     stt_service_pb2_grpc.add_SttServiceServicer_to_server(
         SttServiceServicer(), server)
-    server.add_insecure_port('[::]:5001')
+    server.add_insecure_port('{}:{}'.format(vosk_interface, vosk_port))
     server.start()
     server.wait_for_termination()
 
