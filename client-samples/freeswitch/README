@@ -1,0 +1,7 @@
+Plugin for freeswitch is available here:
+
+https://github.com/alphacep/freeswitch/tree/master/src/mod/asr_tts/mod_vosk
+
+Pull request is also pending:
+
+https://github.com/signalwire/freeswitch/pull/578
