@@ -53,7 +53,7 @@ async def recognize(websocket, path):
 
     rec = None
     word_list = None
-
+    global sample_rate
     while True:
 
         message = await websocket.recv()
