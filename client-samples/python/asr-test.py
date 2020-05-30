@@ -1,35 +1,23 @@
-#!/usr/bin/python3.6
+#!/usr/bin/env python3
 
-from websocket import create_connection
-
+import asyncio
+import websockets
 import sys
 
-inf = "test.wav"
-if len(sys.argv) > 1:
-    inf = sys.argv[1]
+async def hello(uri):
+    async with websockets.connect(uri) as websocket:
+        wf = open(sys.argv[1], "rb")
+        while True:
+            data = wf.read(8000)
 
-def process_chunk(ws, buf):
-    ws.send_binary(buf)
-    res = ws.recv()
-    print(res)
+            if len(data) == 0:
+                break
 
-def process_final_chunk(ws):
-    ws.send('{"eof" : 1}')
-    res = ws.recv()
-    print(res)
-    ws.close()
+            await websocket.send(data)
+            print (await websocket.recv())
 
-def test_stream():
-    ws = create_connection("wss://api.alphacephei.com/asr/en/")
+        await websocket.send('{"eof" : 1}')
+        print (await websocket.recv())
 
-    infile = open(inf, "rb")
-
-    while True:
-        buf = infile.read(8000)
-        if not buf:
-            break
-        process_chunk(ws, buf)
-
-    process_final_chunk(ws)
-
-test_stream()
+asyncio.get_event_loop().run_until_complete(
+    hello('ws://localhost:2700'))

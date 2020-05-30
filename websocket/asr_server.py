@@ -24,7 +24,7 @@ from vosk import Model, KaldiRecognizer
 vosk_interface = os.environ.get('VOSK_SERVER_INTERFACE', '0.0.0.0')
 vosk_port = int(os.environ.get('VOSK_SERVER_PORT', 2700))
 vosk_model_path = os.environ.get('VOSK_MODEL_PATH', 'model')
-sample_rate = float(os.environ.get('SAMPLE_RATE', 8000))
+vosk_sample_rate = float(os.environ.get('VOSK_SAMPLE_RATE', 8000))
 
 if len(sys.argv) > 1:
    vosk_model_path = sys.argv[1]
@@ -53,6 +53,7 @@ async def recognize(websocket, path):
 
     rec = None
     word_list = None
+    sample_rate = vosk_sample_rate
 
     while True:
 

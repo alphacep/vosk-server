@@ -38,6 +38,7 @@ from vosk import Model, KaldiRecognizer
 vosk_interface = os.environ.get('VOSK_SERVER_INTERFACE', '0.0.0.0')
 vosk_port = int(os.environ.get('VOSK_SERVER_PORT', 5001))
 vosk_model_path = os.environ.get('VOSK_MODEL_PATH', 'model')
+vosk_sample_rate = float(os.environ.get('VOSK_SAMPLE_RATE', 8000))
 
 if len(sys.argv) > 1:
    vosk_model_path = sys.argv[1]
