@@ -61,13 +61,12 @@ class SttServiceServicer(stt_service_pb2_grpc.SttServiceServicer):
 
     def get_response(self, json_res):
         res = json.loads(json_res)
-        print(res)
         if 'partial' in res:
              alternatives = [stt_service_pb2.SpeechRecognitionAlternative(text=res['partial'])]
              chunks = [stt_service_pb2.SpeechRecognitionChunk(alternatives=alternatives, final=False)]
              return stt_service_pb2.StreamingRecognitionResponse(chunks=chunks)
         else:
-             words = [self.get_word_info(x) for x in res['result']]
+             words = [self.get_word_info(x) for x in res.get('result', [])]
              alternatives = [stt_service_pb2.SpeechRecognitionAlternative(text=res['text'], words=words)]
              chunks = [stt_service_pb2.SpeechRecognitionChunk(alternatives=alternatives, final=True)]
              return stt_service_pb2.StreamingRecognitionResponse(chunks=chunks)
