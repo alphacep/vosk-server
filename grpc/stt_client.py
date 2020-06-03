@@ -36,6 +36,7 @@ def run(audio_file_name):
                 print('Start chunk: ')
                 for alternative in r.chunks[0].alternatives:
                     print('alternative: ', alternative.text)
+                    print('alternative_confidence: ', alternative.confidence)
                     print('words: ', alternative.words)
                 print('Is final: ', r.chunks[0].final)
                 print('')
