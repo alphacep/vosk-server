@@ -4,17 +4,31 @@ import argparse
 import grpc
 
 import pyaudio
+import sys
 
 import stt_service_pb2
 import stt_service_pb2_grpc
 
+# config
 CHUNK_SIZE = 4000
-CHUNK = 8000
+BUFFER_SIZE = 8000
 FORMAT = pyaudio.paInt16
 CHANNELS = 1
-RATE = 16000
+RATE = None
+DEVICE_INDEX = None
 
-def gen(audio_file_name):
+p = pyaudio.PyAudio()
+
+
+def list_devices():
+    print("List of all devices detected by PyAudio (Index - Name) :")
+    print("-------------------------------------------------------")
+    for x in range(p.get_device_count()):
+        info_dic = p.get_device_info_by_index(x)
+        if info_dic['maxInputChannels'] > 0:
+            print(str(x) + " - " + info_dic['name'])
+
+def gen():
     specification = stt_service_pb2.RecognitionSpec(
         partial_results=True,
         audio_encoding='LINEAR16_PCM',
@@ -24,8 +38,14 @@ def gen(audio_file_name):
 
     yield stt_service_pb2.StreamingRecognitionRequest(config=streaming_config)
 
-    p = pyaudio.PyAudio()
-    stream = p.open(format=FORMAT, channels=CHANNELS, rate=RATE, input=True, frames_per_buffer=CHUNK)
+    stream = p.open(
+        format=FORMAT
+        ,channels=CHANNELS
+        ,rate=int(RATE)
+        ,input=True
+        ,input_device_index=DEVICE_INDEX
+        ,frames_per_buffer=BUFFER_SIZE)
+
     stream.start_stream()
 
     while True:
@@ -37,10 +57,10 @@ def gen(audio_file_name):
 
 
 
-def run(audio_file_name):
+def run():
     channel = grpc.insecure_channel('localhost:5001')
     stub = stt_service_pb2_grpc.SttServiceStub(channel)
-    it = stub.StreamingRecognize(gen(audio_file_name))
+    it = stub.StreamingRecognize(gen())
 
     try:
         for r in it:
@@ -60,7 +80,19 @@ def run(audio_file_name):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--path', required=True, help='audio file path')
+    parser.add_argument('--device-index', required=False, help='input device index')
+    parser.add_argument('--list-device', required=False, action="store_true", help='display device list') #just a flag
     args = parser.parse_args()
 
-    run(args.path)
+    if args.list_device == True:
+        list_devices()
+        sys.exit()
+
+    if args.device_index is not None:
+        DEVICE_INDEX = args.device_index
+        RATE = p.get_device_info_by_index[DEVICE_INDEX]['defaultSampleRate']
+    else :
+        DEVICE_INDEX = p.get_default_input_device_info()['index']
+        RATE = p.get_default_input_device_info()['defaultSampleRate']
+    
+    run()
