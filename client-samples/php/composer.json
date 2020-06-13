@@ -1,7 +1,11 @@
 {
+    "repositories": [
+    {
+          "url": "https://github.com/alphacep/websocket-php",
+          "type": "git"
+    }
+    ],
     "require": {
-        "textalk/websocket": "1.0.*",
-        "marcelog/pagi": "2.*"
+        "textalk/websocket": "dev-master"
     }
 }
-
