@@ -10,11 +10,6 @@ import concurrent.futures
 import logging
 from vosk import Model, KaldiRecognizer
 
-# Uncomment for better memory usage
-#
-# import gc
-# gc.set_threshold(0)
-
 # Enable loging if needed
 #
 # logger = logging.getLogger('websockets')
@@ -38,7 +33,7 @@ if len(sys.argv) > 1:
 # pool = concurrent.futures.ThreadPoolExecutor(initializer=thread_init)
 
 model = Model(vosk_model_path)
-pool = concurrent.futures.ThreadPoolExecutor()
+pool = concurrent.futures.ThreadPoolExecutor((os.cpu_count() or 1))
 loop = asyncio.get_event_loop()
 
 def process_chunk(rec, message):

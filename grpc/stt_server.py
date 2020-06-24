@@ -86,7 +86,7 @@ class SttServiceServicer(stt_service_pb2_grpc.SttServiceServicer):
         yield self.get_response(recognizer.FinalResult())
 
 def serve():
-    server = grpc.server(futures.ThreadPoolExecutor())
+    server = grpc.server(futures.ThreadPoolExecutor((os.cpu_count() or 1)))
     stt_service_pb2_grpc.add_SttServiceServicer_to_server(
         SttServiceServicer(), server)
     server.add_insecure_port('{}:{}'.format(vosk_interface, vosk_port))
