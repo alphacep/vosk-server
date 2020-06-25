@@ -1,4 +1,4 @@
-FROM alphacep/kaldi-vosk-server-atom:latest
+FROM alphacep/kaldi-vosk-server:latest
 
 RUN \
    mkdir /opt/kaldi-fr \

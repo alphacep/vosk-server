@@ -1,0 +1,5 @@
+FROM alphacep/kaldi-en:latest
+
+EXPOSE 5001
+WORKDIR /opt/vosk-server/grpc
+CMD [ "python3", "./stt_server.py", "/opt/vosk-model-en/model" ]

@@ -1,9 +1,0 @@
-FROM alphacep/kaldi-en-atom:latest
-
-RUN pip3 install grpcio-tools \
-    && cd /opt/vosk-server/grpc \
-    && python3 -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. stt_service.proto
-
-EXPOSE 5001
-WORKDIR /opt/vosk-server/grpc
-CMD [ "python3", "./stt_server.py", "/opt/vosk-model-en/model" ]

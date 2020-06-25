@@ -27,24 +27,26 @@ RUN \
     git clone -b lookahead --single-branch https://github.com/alphacep/kaldi /opt/kaldi \
     && cd /opt/kaldi/tools \
     && sed -i 's:status=0:exit 0:g' extras/check_dependencies.sh \
-    && sed -i 's:openfst_add_CXXFLAGS = -g -O2:openfst_add_CXXFLAGS = -g -O3 -msse2 -msse4 -mavx:g' Makefile \
+    && sed -i 's:openfst_add_CXXFLAGS = -g -O2:openfst_add_CXXFLAGS = -g -O3 -msse2:g' Makefile \
     && sed -i 's:--enable-ngram-fsts:--enable-ngram-fsts --disable-bin:g' Makefile \
     && sed -i 's:python:python3:g' extras/install_openblas.sh \
-    && sed -i 's:USE_LOCKING=1:TARGET=SANDYBRIDGE USE_LOCKING=1:g' extras/install_openblas.sh \
+    && sed -i 's:USE_LOCKING=1:DYNAMIC_ARCH=1 USE_LOCKING=1:g' extras/install_openblas.sh \
     && make -j $(nproc) openfst cub \
     && extras/install_openblas.sh \
     && cd /opt/kaldi/src \
     && ./configure --mathlib=OPENBLAS --shared \
-    && sed -i 's:-msse -msse2:-msse -msse2 -msse4 -mavx:g' kaldi.mk \
+    && sed -i 's:-msse -msse2:-msse -msse2:g' kaldi.mk \
     && sed -i 's: -O1 : -O3 :g' kaldi.mk \
     && make -j $(nproc) online2 lm
 
 RUN \
     git clone https://github.com/alphacep/vosk-api /opt/vosk-api \
-    && sed -i 's:--max-active=3000:--max-active=7000:g' /opt/vosk-api/src/model.cc \
-    && sed -i 's:--beam=10.0:--beam=13.0:g' /opt/vosk-api/src/model.cc \
-    && sed -i 's:--lattice-beam=2.0:--lattice-beam=6.0:g' /opt/vosk-api/src/model.cc \
     && cd /opt/vosk-api/python \
     && KALDI_ROOT=/opt/kaldi python3 ./setup.py install --user --single-version-externally-managed --root=/ \
     && git clone https://github.com/alphacep/vosk-server /opt/vosk-server \
+    \
+    && pip3 install grpcio-tools \
+    && cd /opt/vosk-server/grpc \
+    && python3 -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. stt_service.proto \
+    \
     && rm -rf /opt/kaldi
