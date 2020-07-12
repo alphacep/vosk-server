@@ -3,7 +3,9 @@
 set -e
 set -x
 
-for kind in vosk-server ru en de cn fr grpc-en ; do
+docker build --build-arg KALDI_MKL=0 --file Dockerfile.kaldi-vosk-server --tag alphacep/kaldi-vosk-server:latest .
+
+for kind in ru en de cn fr grpc-en ; do
     docker build --file Dockerfile.kaldi-${kind} --tag alphacep/kaldi-${kind}:latest .
 done
 
