@@ -47,6 +47,7 @@ def parseGram(grammar: tuple) -> dict:
             key = line[1:line.index('>')]
             value = line[line.index('=')+1:line.index(';')].strip()
             value = value.replace('*', '.*')
+            value = value.replace(']+', ')*')
             value = value.replace('[', '(')
             value = value.replace(']', '){0,1}')
             start = 0
@@ -128,6 +129,7 @@ async def recognize(websocket, path):
     grammars = {}
     activegrammar = None
     activepublicgrammar = None
+    print('Connect')
 
     while True:
 
@@ -135,10 +137,12 @@ async def recognize(websocket, path):
         try:
             message = await websocket.recv()
         except:
+            print('Connection broken')
             break
 
         # Load configuration if provided
         if isinstance(message, str) and 'config' in message:
+            print('Config')
             jobj = json.loads(message)['config']
             if 'word_list' in jobj:
                 word_list = jobj['word_list']
@@ -147,12 +151,14 @@ async def recognize(websocket, path):
             continue
 
         if isinstance(message, str) and 'newgrammar' in message:
+            print('Load grammar')
             jobj = json.loads(message)
             if 'newgrammar' in jobj and 'grammar_data' in jobj:
                 grammars[jobj['newgrammar']] = base64.b64decode(jobj['grammar_data']).decode('utf-8').splitlines()
             continue
 
         if isinstance(message, str) and 'setgrammar' in message:
+            print('Activate grammar')
             jobj = json.loads(message)
             if 'setgrammar' in jobj:
                 if jobj['setgrammar'] in grammars:
@@ -163,8 +169,8 @@ async def recognize(websocket, path):
             continue
 
         if isinstance(message, str) and 'delgrammar' in message:
+            print('Unload grammar')
             jobj = json.loads(message)
-            print(message)
             if 'delgrammar' in jobj:
                 if jobj['delgrammar'] in grammars:
                     grammars.pop(jobj['delgrammar'])
