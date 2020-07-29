@@ -105,7 +105,7 @@ def testPhrase(phrase: str, grams: dict, publicgrams: tuple):
         matchedgram = 'unknown'
     return matchedgram
 
-def process_chunk(rec, message, activegrammar, activepublicgrammar):
+def process_chunk(rec, message, activegrammar, activepublicgrammar, last_text):
     if message == '{"eof" : 1}':
         result = json.loads(rec.FinalResult())
         if activegrammar != None and activepublicgrammar != None:
@@ -113,19 +113,36 @@ def process_chunk(rec, message, activegrammar, activepublicgrammar):
         result = json.dumps(result)
         return result, True
     elif rec.AcceptWaveform(message):
-        result= json.loads(rec.Result())
+        result = json.loads(rec.Result())
         if activegrammar != None and activepublicgrammar != None:
             result['grammar'] = testPhrase(result['text'], activegrammar, activepublicgrammar)
         result = json.dumps(result)
         return result, False
     else:
-        return rec.PartialResult(), False
+        result = json.loads(rec.PartialResult())
+        if activegrammar != None and activepublicgrammar != None:
+            if result['partial'] != '':
+                if result['partial'] in last_text:
+                    if len(last_text) >= 2:
+                        last_text.clear()
+                        result = json.loads(rec.Result())
+                        result['grammar'] = testPhrase(result['text'], activegrammar, activepublicgrammar)
+                    else:
+                        last_text.append(result['partial'])
+                else:
+                    last_text.clear()
+                    last_text.append(result['partial'])
+            else:
+                last_text.clear()
+        result = json.dumps(result)
+        return result, False
 
 async def recognize(websocket, path):
 
     rec = None
     word_list = None
     sample_rate = vosk_sample_rate
+    last_text = []
     grammars = {}
     activegrammar = None
     activepublicgrammar = None
@@ -183,7 +200,7 @@ async def recognize(websocket, path):
             else:
                  rec = KaldiRecognizer(model, sample_rate)
 
-        response, stop = await loop.run_in_executor(pool, process_chunk, rec, message, activegrammar, activepublicgrammar)
+        response, stop = await loop.run_in_executor(pool, process_chunk, rec, message, activegrammar, activepublicgrammar, last_text)
         await websocket.send(response)
         if stop: break
 
