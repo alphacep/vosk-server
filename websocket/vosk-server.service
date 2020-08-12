@@ -1,0 +1,15 @@
+[Unit]
+Description=Vosk Speech Recognition Service
+After=network.target auditd.service
+
+[Service]
+ExecStart=/usr/sbin/vosk-server
+ExecReload=/bin/kill -HUP $MAINPID
+KillMode=process
+Restart=on-failure
+RestartPreventExitStatus=255
+Type=simple
+
+[Install]
+WantedBy=multi-user.target
+Alias=vosk-server.service
