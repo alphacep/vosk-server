@@ -10,7 +10,8 @@ import concurrent.futures
 import logging
 import re
 import base64
-from vosk import Model, KaldiRecognizer
+from urllib.parse import urlparse, parse_qsl
+from vosk import SpkModel, Model, KaldiRecognizer
 
 # Enable loging if needed
 #
@@ -20,7 +21,7 @@ from vosk import Model, KaldiRecognizer
 
 vosk_interface = os.environ.get('VOSK_SERVER_INTERFACE', '0.0.0.0')
 vosk_port = int(os.environ.get('VOSK_SERVER_PORT', 2700))
-vosk_model_path = os.environ.get('VOSK_MODEL_PATH', 'model')
+vosk_model_path = os.environ.get('VOSK_MODEL_PATH', '/usr/share/vosk/model')
 vosk_sample_rate = float(os.environ.get('VOSK_SAMPLE_RATE', 8000))
 
 if len(sys.argv) > 1:
@@ -34,7 +35,6 @@ if len(sys.argv) > 1:
 #     GpuInstantiate()
 # pool = concurrent.futures.ThreadPoolExecutor(initializer=thread_init)
 
-model = Model(vosk_model_path)
 pool = concurrent.futures.ThreadPoolExecutor((os.cpu_count() or 1))
 loop = asyncio.get_event_loop()
 
@@ -105,7 +105,7 @@ def testPhrase(phrase: str, grams: dict, publicgrams: tuple):
         matchedgram = 'unknown'
     return matchedgram
 
-def process_chunk(rec, message, activegrammar, activepublicgrammar, last_text):
+def process_chunk(rec, message, activegrammar, activepublicgrammar, last_tex, heuristics):
     if message == '{"eof" : 1}':
         result = json.loads(rec.FinalResult())
         if activegrammar != None and activepublicgrammar != None:
@@ -120,7 +120,7 @@ def process_chunk(rec, message, activegrammar, activepublicgrammar, last_text):
         return result, False
     else:
         result = json.loads(rec.PartialResult())
-        if activegrammar != None and activepublicgrammar != None:
+        if heuristics and activegrammar != None and activepublicgrammar != None:
             if result['partial'] != '':
                 if result['partial'] in last_text:
                     if len(last_text) >= 2:
@@ -146,6 +146,14 @@ async def recognize(websocket, path):
     grammars = {}
     activegrammar = None
     activepublicgrammar = None
+    heuristics = False
+    language = 'en'
+
+    params = dict(parse_qsl(urlparse(path).query))
+    if 'language' in params:
+        language = params['language']
+    model = Model(vosk_model_path+'/'+language)
+    spk_model = SpkModel(vosk_model_path+'/spk')
     print('Connect')
 
     while True:
@@ -165,6 +173,12 @@ async def recognize(websocket, path):
                 word_list = jobj['word_list']
             if 'sample_rate' in jobj:
                 sample_rate = float(jobj['sample_rate'])
+            continue
+
+        if isinstance(message, str) and 'setheuristics' in message:
+            print('Set heuristics')
+            jobj = json.loads(message)
+            heuristics = jobj['setheuristics'] == "true"
             continue
 
         if isinstance(message, str) and 'newgrammar' in message:
@@ -196,11 +210,11 @@ async def recognize(websocket, path):
         # Create the recognizer, word list is temporary disabled since not every model supports it
         if not rec:
             if False and word_list:
-                 rec = KaldiRecognizer(model, sample_rate, word_list)
+                 rec = KaldiRecognizer(model, spk_model, sample_rate, word_list)
             else:
-                 rec = KaldiRecognizer(model, sample_rate)
+                 rec = KaldiRecognizer(model, spk_model, sample_rate)
 
-        response, stop = await loop.run_in_executor(pool, process_chunk, rec, message, activegrammar, activepublicgrammar, last_text)
+        response, stop = await loop.run_in_executor(pool, process_chunk, rec, message, activegrammar, activepublicgrammar, last_text, heuristics)
         await websocket.send(response)
         if stop: break
 
