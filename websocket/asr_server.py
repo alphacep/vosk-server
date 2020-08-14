@@ -105,7 +105,7 @@ def testPhrase(phrase: str, grams: dict, publicgrams: tuple):
         matchedgram = 'unknown'
     return matchedgram
 
-def process_chunk(rec, message, activegrammar, activepublicgrammar, last_tex, heuristics):
+def process_chunk(rec, message, activegrammar, activepublicgrammar, last_text, heuristics):
     if message == '{"eof" : 1}':
         result = json.loads(rec.FinalResult())
         if activegrammar != None and activepublicgrammar != None:
