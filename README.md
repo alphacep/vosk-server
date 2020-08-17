@@ -3,7 +3,8 @@
 This is a server for highly accurate offline speech recognition using
 Kaldi and [Vosk-API](https://github.com/alphacep/vosk-api).
 
-There are three different servers which support three major protocols - MQTT, GRPC and Websocket
+There are four different servers which support four major communication
+protocols - MQTT, GRPC, WebRTC and Websocket
 
 The server can be used locally to provide the speech recognition to smart
 home, PBX like freeswitch or asterisk. The server can also run as a

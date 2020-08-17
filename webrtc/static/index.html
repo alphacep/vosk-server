@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>WebRTC Kaldi ASR</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
+          integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <link rel="stylesheet" href="/static/styles.css">
+
+</head>
+<body>
+
+<div class="float-right">
+    <a href="https://github.com/danijel3/KaldiWebrtcServer">
+        <img width="149" height="149"
+             src="https://github.blog/wp-content/uploads/2008/12/forkme_right_gray_6d6d6d.png?resize=149%2C149"
+             class="attachment-full size-full" alt="Fork me on GitHub"
+             data-recalc-dims="1">
+    </a>
+</div>
+
+<div class="jumbotron">
+
+    <div class="container">
+        <img id="logo" class="display-4 float-left" src="/static/kaldi_logo.png">
+        <div>
+            <h1 class="display-4">Kaldi live speech recognition demo</h1>
+            <p class="lead">With WebRTC technology using <a href="https://github.com/aiortc/aiortc">aiortc</a> project
+            </p>
+        </div>
+    </div>
+</div>
+<div class="container">
+
+    <p>
+        <button class="btn btn-success" id="start" onclick="start()">Start</button>
+        <button class="btn btn-danger d-none" id="stop" onclick="stop()">Stop</button>
+        <span id="status" class="text-uppercase text-muted">Press start</span>
+    </p>
+
+    <div id="output"></div>
+
+    <script src="/static/client.js"></script>
+</div>
+</body>
+</html>
