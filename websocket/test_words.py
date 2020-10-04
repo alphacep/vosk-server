@@ -9,7 +9,7 @@ async def hello(uri):
     async with websockets.connect(uri) as websocket:
         wf = wave.open(sys.argv[1], "rb")
         await websocket.send('''{"config" : 
-                    { "word_list" : "zero one two three four five six seven eight nine oh",
+                    { "phrase_list" : ["zero one two three four five six seven eight nine oh"],
                       "sample_rate" : 16000.0}}''')
         while True:
             data = wf.readframes(4000)
