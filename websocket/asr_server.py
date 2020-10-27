@@ -202,6 +202,7 @@ async def dorecognize(websocket, language):
         response, stop = process_chunk(rec['kaldi'], message, activegrammar, activepublicgrammar, last_text, heuristics)
         await websocket.send(response)
         if stop: break
+    rec['busy'] = 0
 
 def recognize(websocket, language, loop):
     return concurrent.futures.wait([asyncio.run_coroutine_threadsafe(dorecognize(websocket, language), loop)])
