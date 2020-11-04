@@ -1,11 +1,5 @@
 {
-    "repositories": [
-    {
-          "url": "https://github.com/alphacep/websocket-php",
-          "type": "git"
-    }
-    ],
     "require": {
-        "textalk/websocket": "dev-master"
+        "textalk/websocket": "^1.4.1"
     }
 }
