@@ -68,7 +68,7 @@ class SttServiceServicer(stt_service_pb2_grpc.SttServiceServicer):
         else:
              words = [self.get_word_info(x) for x in res.get('result', [])]
              confs = [w.confidence for w in words]
-             alt_conf = sum(confs) / len(confs)
+             alt_conf = sum(confs) / len(confs) if len(confs) > 0 else 0
              alternatives = [stt_service_pb2.SpeechRecognitionAlternative(text=res['text'], words=words, confidence=alt_conf)]
              chunks = [stt_service_pb2.SpeechRecognitionChunk(alternatives=alternatives, final=True)]
              return stt_service_pb2.StreamingRecognitionResponse(chunks=chunks)
