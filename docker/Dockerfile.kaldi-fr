@@ -1,12 +1,13 @@
 FROM alphacep/kaldi-vosk-server:latest
 
 ENV MODEL_VERSION 0.6
+ENV LINTO_VERSION 2.2.0
 RUN mkdir /opt/vosk-model-fr \
    && cd /opt/vosk-model-fr \
-   && wget -q https://alphacephei.com/vosk/models/vosk-model-fr-${MODEL_VERSION}-linto.zip \
-   && unzip vosk-model-fr-${MODEL_VERSION}-linto.zip \
-   && mv vosk-model-fr-${MODEL_VERSION}-linto model \
-   && rm vosk-model-fr-${MODEL_VERSION}-linto.zip
+   && wget -q https://alphacephei.com/vosk/models/vosk-model-fr-${MODEL_VERSION}-linto-${LINTO_VERSION}.zip \
+   && unzip vosk-model-fr-${MODEL_VERSION}-linto-${LINTO_VERSION}.zip \
+   && mv vosk-model-fr-${MODEL_VERSION}-linto-${LINTO_VERSION} model \
+   && rm vosk-model-fr-${MODEL_VERSION}-linto-${LINTO_VERSION}.zip
 
 EXPOSE 2700
 WORKDIR /opt/vosk-server/websocket
