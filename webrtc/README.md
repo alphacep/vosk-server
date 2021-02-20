@@ -4,14 +4,14 @@
 ## Setup environment and run it. 
 ### Set model path  
 Setup path to ./model  
-The models can be download from htere https://alphacephei.com/vosk/models.  
+The models can be download from here https://alphacephei.com/vosk/models   
 
 ### python environment   
 The sample can work in python 3.8 
 $ pip install numpy aiortc aiohttp aiorpc vosk  
 If your system install aiortc failed, please install gcc in your environment and use pip to install aiortc again.  
 
-### Execution 
+### Execution in local 
 $ python asr_server_webrtc.py  
 Open chrome browser with URL http://0.0.0.0:2700 and demo is there.   
 
