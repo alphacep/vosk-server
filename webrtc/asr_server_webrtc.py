@@ -36,7 +36,6 @@ def process_chunk(rec, message):
     else:
         return rec.PartialResult()
 
-dataframes = bytearray(b"")
 
 class KaldiTask:
     def __init__(self, user_connection):
@@ -63,13 +62,12 @@ class KaldiTask:
             self.__audio_task = None
 
     async def __run_audio_xfer(self):
+        dataframes = bytearray(b"")
         while True:
             frame = await self.__track.recv()
             frame = self.__resampler.resample(frame)
             data = frame.to_ndarray()
-
-            max_frames_len = 10000
-            global dataframes
+            max_frames_len = 8000
             message = data.tobytes()
             recv_frames = bytearray(message)
             dataframes += recv_frames
