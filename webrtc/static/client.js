@@ -2,18 +2,9 @@
 var pc = null;
 var dc = null, dcInterval = null;
 
-transcriptionOutput = document.getElementById('output');
 start_btn = document.getElementById('start');
 stop_btn = document.getElementById('stop');
 statusField = document.getElementById('status');
-
-
-var lastTrans = document.createElement('span');
-lastTrans.innerText = '💤';
-lastTrans.classList.add('partial');
-transcriptionOutput.appendChild(lastTrans);
-var imcompleteTrans = '';
-
 
 function btn_show_stop() {
     start_btn.classList.add('d-none');
@@ -23,10 +14,8 @@ function btn_show_stop() {
 function btn_show_start() {
     stop_btn.classList.add('d-none');
     start_btn.classList.remove('d-none');
-    lastTrans.innerText = '💤';
     statusField.innerText = 'Press start';
 }
-
 
 function negotiate() {
     return pc.createOffer().then(function (offer) {
@@ -70,12 +59,20 @@ function negotiate() {
     });
 }
 
+function performRecvText(str) {
+    htmlStr = document.getElementById('list').innerHTML
+    listItemHtmlStr = "<div>" + str + "</div>\n";
+    htmlStr += listItemHtmlStr;
+    document.getElementById('list').innerHTML = htmlStr; 
+}
+
+function performRecvPartial(str) {
+    document.getElementById('partial').innerText = str
+}
+
 function start() {
     btn_show_stop();
-
-    lastTrans.innerText = '💤';
     statusField.innerText = 'Connecting...';
-
     var config = {
         sdpSemantics: 'unified-plan'
     };
@@ -94,23 +91,15 @@ function start() {
         console.log('Opened data channel');
     };
     dc.onmessage = function (evt) {
-        statusField.innerText = 'Listening...';
-        var msg = evt.data;
-        if (msg.endsWith('\n')) {
-            lastTrans.innerText = imcompleteTrans + msg.substring(0, msg.length - 1);
-            lastTrans.classList.remove('partial');
-            lastTrans = document.createElement('span');
-            lastTrans.classList.add('partial');
-            lastTrans.innerText = '...';
-            transcriptionOutput.appendChild(lastTrans);
-
-            imcompleteTrans = '';
-        } else if (msg.endsWith('\r')) {
-            lastTrans.innerText = imcompleteTrans + msg.substring(0, msg.length - 1) + '...';
-            imcompleteTrans = '';
-        } else {
-            imcompleteTrans += msg;
+        if(evt.data !== undefined) {
+            getData =JSON.parse(evt.data)
+            if(getData.text !== undefined) {
+                performRecvText(getData.text)
+            } else if (getData.partial !== undefined) {
+                performRecvPartial(getData.partial)
+            }
         }
+        statusField.innerText = 'Listening...';
     };
 
     pc.oniceconnectionstatechange = function () {
