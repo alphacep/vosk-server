@@ -66,9 +66,8 @@ class KaldiTask:
         while True:
             frame = await self.__track.recv()
             frame = self.__resampler.resample(frame)
-            data = frame.to_ndarray()
             max_frames_len = 8000
-            message = data.tobytes()
+            message = frame.planes[0].to_bytes()
             recv_frames = bytearray(message)
             dataframes += recv_frames
             if len(dataframes) > max_frames_len:
@@ -77,7 +76,6 @@ class KaldiTask:
                 print(response)
                 self.__channel.send(response)
                 dataframes = bytearray(b"")
-
 
 async def index(request):
     content = open(str(ROOT / 'static' / 'index.html')).read()
