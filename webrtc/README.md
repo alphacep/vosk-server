@@ -8,7 +8,7 @@ The models can be download from here https://alphacephei.com/vosk/models
 
 ### python environment   
 The sample can work in python 3.8 
-$ pip install numpy aiortc aiohttp aiorpc vosk  
+$ pip install aiortc aiohttp aiorpc vosk  
 If your system install aiortc failed, please install gcc in your environment and use pip to install aiortc again.  
 
 ### Execution in local 
