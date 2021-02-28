@@ -37,7 +37,7 @@ pool = concurrent.futures.ThreadPoolExecutor((os.cpu_count() or 1))
 loop = asyncio.get_event_loop()
 
 def process_chunk(rec, message):
-    if message == '{"eof" : 1}':
+    if message == b'{"eof" : 1}':
         return rec.FinalResult(), True
     elif rec.AcceptWaveform(message):
         return rec.Result(), False
