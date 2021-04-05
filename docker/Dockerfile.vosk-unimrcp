@@ -57,7 +57,7 @@ RUN \
     && make -j $(nproc) KALDI_ROOT=/opt/kaldi \
     && make install \
     && /sbin/ldconfig \
-    && rm -rf /ope/unimrcp-deps \
+    && rm -rf /opt/unimrcp-deps \
     && rm -rf /opt/unimrcp \
     && rm -rf /opt/kaldi \
     && rm -rf /root/.cache
