@@ -4,11 +4,13 @@ ARG KALDI_MKL
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-        g++ \
+        wget \
         bzip2 \
         unzip \
+        xz-utils \
+        g++ \
         make \
-        wget \
+        cmake \
         git \
         python3 \
         python3-dev \
@@ -16,16 +18,13 @@ RUN apt-get update && \
         python3-setuptools \
         python3-pip \
         python3-wheel \
+        python3-cffi \
         zlib1g-dev \
-        patch \
-        ca-certificates \
-        swig \
-        cmake \
-        xz-utils \
         automake \
         autoconf \
         libtool \
         pkg-config \
+        ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
 RUN \
@@ -51,8 +50,10 @@ RUN \
     && make -j $(nproc) online2 lm rnnlm \
     \
     && git clone https://github.com/alphacep/vosk-api /opt/vosk-api \
+    && cd /opt/vosk-api/src \
+    && KALDI_MKL=$KALDI_MKL KALDI_ROOT=/opt/kaldi make -j $(nproc) \
     && cd /opt/vosk-api/python \
-    && KALDI_MKL=$KALDI_MKL KALDI_ROOT=/opt/kaldi python3 ./setup.py install --single-version-externally-managed --root=/ \
+    && python3 ./setup.py install \
     \
     && git clone https://github.com/alphacep/vosk-server /opt/vosk-server \
     && pip3 install grpcio-tools \
