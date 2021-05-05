@@ -7,7 +7,7 @@ RUN mkdir /opt/vosk-model-ru \
    && unzip vosk-model-ru-${RUVERSION}.zip \
    && mv vosk-model-ru-${RUVERSION} model \
    && rm -rf model/extra \
-   && rm -rf model/rnnlm \
+   && rm -rf model/rescore/G.carpa \
    && rm -rf vosk-model-ru-${RUVERSION}.zip
 
 EXPOSE 2700
