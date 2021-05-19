@@ -67,7 +67,7 @@ async def recognize(websocket, path):
         # Create the recognizer, word list is temporary disabled since not every model supports it
         if not rec:
             if phrase_list:
-                 rec = KaldiRecognizer(model, sample_rate, json.dumps(phrase_list))
+                 rec = KaldiRecognizer(model, sample_rate, json.dumps(phrase_list, ensure_ascii=False))
             else:
                  rec = KaldiRecognizer(model, sample_rate)
             rec.SetMaxAlternatives(vosk_alternatives)
