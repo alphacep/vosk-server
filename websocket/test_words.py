@@ -5,7 +5,7 @@ import websockets
 import sys
 import wave
 
-async def hello(uri):
+async def run_test(uri):
     async with websockets.connect(uri) as websocket:
         wf = wave.open(sys.argv[1], "rb")
         await websocket.send('''{"config" : 
@@ -24,4 +24,4 @@ async def hello(uri):
         print (await websocket.recv())
 
 asyncio.get_event_loop().run_until_complete(
-    hello('ws://localhost:2700'))
+    run_test('ws://localhost:2700'))

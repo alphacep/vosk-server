@@ -34,7 +34,7 @@ async def _polite_websocket(ws: websockets.WebSocketClientProtocol) -> AsyncGene
         await ws.send('{"eof" : 1}')
         print(await ws.recv())
 
-async def hello(uri):
+async def run_test(uri):
     async with AsyncExitStack() as stack:
         ws = await stack.enter_async_context(websockets.connect(uri))
         print(f'Connected to {uri}')
@@ -62,7 +62,7 @@ else:
 try:
     loop = asyncio.get_event_loop()
     loop.run_until_complete(
-        hello(f'ws://' + server))
+        run_test('ws://' + server))
 except (Exception, KeyboardInterrupt) as e:
     loop.stop()
     loop.run_until_complete(
