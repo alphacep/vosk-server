@@ -10,7 +10,8 @@ async def run_test(uri):
         wf = wave.open(sys.argv[1], "rb")
         await websocket.send('''{"config" : 
                     { "phrase_list" : ["zero one two three four five six seven eight nine oh"],
-                      "sample_rate" : 16000.0}}''')
+                      "sample_rate" : 16000.0,
+                      "words" : 0}}''')
         while True:
             data = wf.readframes(4000)
 
