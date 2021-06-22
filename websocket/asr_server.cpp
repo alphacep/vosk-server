@@ -37,6 +37,14 @@ using tcp = boost::asio::ip::tcp;       // from <boost/asio/ip/tcp.hpp>
 
 //------------------------------------------------------------------------------
 static VoskModel *model;
+
+struct Args
+{
+    float sample_rate = 8000;
+    int max_alternatives = 0;
+    bool show_words = true;
+};
+
 // Report a failure
 void fail(beast::error_code ec, char const *what)
 {
@@ -49,20 +57,29 @@ class session : public std::enable_shared_from_this<session>
     struct Chunk
     {
         std::string_view result;
-        bool stop;
+        bool stop = false;
     };
+
     websocket::stream<beast::tcp_stream> ws_;
     beast::flat_buffer buffer_;
-    VoskRecognizer *rec;
-    Chunk chunk;
+    VoskRecognizer *rec_;
+    Chunk chunk_;
+    Args args_;
 
 public:
     // Take ownership of the socket
-    explicit session(tcp::socket &&socket)
-        : ws_(std::move(socket))
+    explicit session(tcp::socket &&socket, Args &&args)
+        : ws_(std::move(socket)), args_(std::move(args))
 
     {
-        rec = vosk_recognizer_new(model, 8000);
+        rec_ = vosk_recognizer_new(model, args.sample_rate);
+        vosk_recognizer_set_max_alternatives(rec_, args.max_alternatives);
+        vosk_recognizer_set_words(rec_, args.show_words);
+    }
+
+    ~session()
+    {
+        vosk_recognizer_free(rec_);
     }
 
     // Get on the correct executor
@@ -124,21 +141,25 @@ public:
                 shared_from_this()));
     }
 
-    Chunk process_chunk(VoskRecognizer *rec, const char *message, int len)
+    Chunk process_chunk(const char *message, int len)
     {
         // std::cout << message << std::endl;
         if (strcmp(message, "{\"eof\" : 1}") == 0)
         {
-            return Chunk{vosk_recognizer_final_result(rec), true};
+            return Chunk{vosk_recognizer_final_result(rec_), true};
         }
-        else if (vosk_recognizer_accept_waveform(rec, message, len))
+        else if (vosk_recognizer_accept_waveform(rec_, message, len))
         {
-            return Chunk{vosk_recognizer_result(rec), false};
+            return Chunk{vosk_recognizer_result(rec_), false};
         }
         else
         {
-            return Chunk{vosk_recognizer_partial_result(rec), false};
+            return Chunk{vosk_recognizer_partial_result(rec_), false};
         }
+    }
+    void on_close(boost::system::error_code const &ec)
+    {
+        std::cout << "Closing the Socket " << ec.message() << '\n';
     }
     void
     on_read(
@@ -154,18 +175,21 @@ public:
         if (ec)
             fail(ec, "read");
 
-        if (chunk.stop)
+        if (chunk_.stop)
         {
+            ws_.close(beast::websocket::close_code::normal);
+
             return;
         }
+
         const char *buf = boost::asio::buffer_cast<const char *>(buffer_.cdata());
         int len = static_cast<int>(buffer_.size());
-        chunk = process_chunk(rec, buf, len);
+        chunk_ = process_chunk(buf, len);
 
         ws_.text(ws_.got_binary());
 
         ws_.async_write(
-            boost::asio::const_buffer(chunk.result.data(), chunk.result.size()),
+            boost::asio::const_buffer(chunk_.result.data(), chunk_.result.size()),
             beast::bind_front_handler(
                 &session::on_write,
                 shared_from_this()));
@@ -196,12 +220,14 @@ class listener : public std::enable_shared_from_this<listener>
 {
     net::io_context &ioc_;
     tcp::acceptor acceptor_;
+    Args args_;
 
 public:
     listener(
         net::io_context &ioc,
-        tcp::endpoint endpoint)
-        : ioc_(ioc), acceptor_(ioc)
+        tcp::endpoint endpoint,
+        Args args)
+        : ioc_(ioc), acceptor_(ioc), args_(args)
     {
         beast::error_code ec;
 
@@ -268,7 +294,7 @@ private:
         else
         {
             // Create the session and run it
-            std::make_shared<session>(std::move(socket))->run();
+            std::make_shared<session>(std::move(socket), std::move(args_))->run();
         }
 
         // Accept another connection
@@ -294,11 +320,24 @@ int main(int argc, char *argv[])
     auto const model_path = argv[4];
     model = vosk_model_new(model_path);
 
+    Args args;
+    if (const char *env_p = std::getenv("VOSK_SAMPLE_RATE"))
+    {
+        args.sample_rate = std::stof(env_p);
+    }
+    if (const char *env_p = std::getenv("VOSK_ALTERNATIVES"))
+    {
+        args.max_alternatives = std::stoi(env_p);
+    }
+    if (const char *env_p = std::getenv("VOSK_SHOW_WORDS"))
+    {
+        args.show_words = strcmp(env_p, "True") == 0;
+    }
     // The io_context is required for all I/O
     net::io_context ioc{threads};
 
     // Create and launch a listening port
-    std::make_shared<listener>(ioc, tcp::endpoint{address, port})->run();
+    std::make_shared<listener>(ioc, tcp::endpoint{address, port}, args)->run();
 
     // Run the I/O service on the requested number of threads
     std::vector<std::thread> v;
