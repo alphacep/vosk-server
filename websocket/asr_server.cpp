@@ -1,15 +1,6 @@
-//
-// Copyright (c) 2016-2019 Vinnie Falco (vinnie dot falco at gmail dot com)
-//
-// Distributed under the Boost Software License, Version 1.0. (See accompanying
-// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
-//
-// Official repository: https://github.com/boostorg/beast
-//
-
 //------------------------------------------------------------------------------
 //
-// Example: WebSocket server, asynchronous
+// Based on https://www.boost.org/doc/libs/develop/libs/beast/example/websocket/server/async/websocket_server_async.cpp
 //
 //------------------------------------------------------------------------------
 
@@ -349,9 +340,7 @@ int main(int argc, char *argv[])
                 ioc.run();
             });
     ioc.run();
-
+    
+    vosk_model_free(model);
     return EXIT_SUCCESS;
 }
-
-// g++ asr_server.cpp -I../boost_1_76_0/ -pthread -o asr_server -I. -L/usr/local/lib/python3.7/dist-packages/vosk-0.3.22-py3.7.egg/vosk/ -lvosk -ldl -std=c++17
-// env LD_LIBRARY_PATH=/usr/local/lib/python3.7/dist-packages/vosk-0.3.22-py3.7.egg/vosk/ ./asr_server 0.0.0.0 8080 1 /opt/model/

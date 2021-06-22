@@ -59,7 +59,7 @@ RUN \
 RUN git clone https://github.com/Abdullah-AlAttar/vosk-server.git /opt/vosk-server \
     && pip3 install grpcio-tools \
     && cd /opt/vosk-server/grpc \
-    && python3 -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. stt_service.proto 
+    && python3 -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. stt_service.proto
 
 
 WORKDIR /opt
@@ -70,9 +70,11 @@ RUN wget https://boostorg.jfrog.io/artifactory/main/release/1.76.0/source/boost_
 
 
 RUN cp /opt/vosk-api/src/libvosk.so /opt/libvosk.so && cd /opt/vosk-server/websocket \
-    && g++ asr_server.cpp -I/opt/boost_1_76_0/ -pthread -o asr_server  -I/opt/vosk-api/src -L/opt -lvosk -ldl -std=c++17
+    && g++ -O3 asr_server.cpp -I/opt/boost_1_76_0/ -pthread -o asr_server  -I/opt/vosk-api/src -L/opt -lvosk -ldl -std=c++17 \
+    && strip asr_server
 
 RUN    rm -rf /opt/vosk-api \
     && rm -rf /opt/kaldi \
     && rm -rf /root/.cache \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && rm -rf /opt/boost_1_76_0
