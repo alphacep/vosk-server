@@ -134,7 +134,6 @@ public:
 
     Chunk process_chunk(const char *message, int len)
     {
-        // std::cout << message << std::endl;
         if (strcmp(message, "{\"eof\" : 1}") == 0)
         {
             return Chunk{vosk_recognizer_final_result(rec_), true};
@@ -148,10 +147,7 @@ public:
             return Chunk{vosk_recognizer_partial_result(rec_), false};
         }
     }
-    void on_close(boost::system::error_code const &ec)
-    {
-        std::cout << "Closing the Socket " << ec.message() << '\n';
-    }
+
     void
     on_read(
         beast::error_code ec,
@@ -340,7 +336,7 @@ int main(int argc, char *argv[])
                 ioc.run();
             });
     ioc.run();
-    
+
     vosk_model_free(model);
     return EXIT_SUCCESS;
 }
