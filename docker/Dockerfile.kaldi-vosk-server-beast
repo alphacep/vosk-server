@@ -69,7 +69,7 @@ RUN wget https://boostorg.jfrog.io/artifactory/main/release/1.76.0/source/boost_
   && rm boost_1_76_0.tar.gz
 
 
-RUN cp /opt/vosk-api/src/libvosk.so /opt/libvosk.so && cd /opt/vosk-server/websocket \
+RUN cp /opt/vosk-api/src/libvosk.so /opt/libvosk.so && cd /opt/vosk-server/websocket-cpp \
     && g++ -O3 asr_server.cpp -I/opt/boost_1_76_0/ -pthread -o asr_server  -I/opt/vosk-api/src -L/opt -lvosk -ldl -std=c++17 \
     && strip asr_server
 
