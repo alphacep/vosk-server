@@ -55,21 +55,37 @@ class SttServiceServicer(stt_service_pb2_grpc.SttServiceServicer):
         return duration_pb2.Duration(seconds = seconds, nanos=nanos)
 
     def get_word_info(self, x):
-        return stt_service_pb2.WordInfo(start_time=self.get_duration(x['start']),
-                                        end_time=self.get_duration(x['end']),
-                                        word=x['word'], confidence=x['conf'])
+        return stt_service_pb2.WordInfo(start_time = self.get_duration(x['start']),
+                                        end_time = self.get_duration(x['end']),
+                                        word= x['word'], confidence = x.get('conf', 1.0))
+
+    def get_alternative(self, x):
+
+        words = [self.get_word_info(y) for y in x.get('result', [])]
+        if 'confidence' in x:
+             conf = x['confidence']
+        elif len(words) > 0:
+             confs = [w.confidence for w in words]
+             conf = sum(confs) / len(confs)
+        else:
+             conf = 1.0
+
+        return stt_service_pb2.SpeechRecognitionAlternative(text=x['text'],
+                                                            words = words, confidence = conf)
 
     def get_response(self, json_res):
         res = json.loads(json_res)
+
         if 'partial' in res:
              alternatives = [stt_service_pb2.SpeechRecognitionAlternative(text=res['partial'])]
              chunks = [stt_service_pb2.SpeechRecognitionChunk(alternatives=alternatives, final=False)]
              return stt_service_pb2.StreamingRecognitionResponse(chunks=chunks)
+        elif 'alternatives' in res:
+             alternatives = [self.get_alternative(x) for x in res['alternatives']]
+             chunks = [stt_service_pb2.SpeechRecognitionChunk(alternatives=alternatives, final=True)]
+             return stt_service_pb2.StreamingRecognitionResponse(chunks=chunks)
         else:
-             words = [self.get_word_info(x) for x in res.get('result', [])]
-             confs = [w.confidence for w in words]
-             alt_conf = sum(confs) / len(confs)
-             alternatives = [stt_service_pb2.SpeechRecognitionAlternative(text=res['text'], words=words, confidence=alt_conf)]
+             alternatives = [self.get_alternative(res)]
              chunks = [stt_service_pb2.SpeechRecognitionChunk(alternatives=alternatives, final=True)]
              return stt_service_pb2.StreamingRecognitionResponse(chunks=chunks)
 
@@ -77,6 +93,9 @@ class SttServiceServicer(stt_service_pb2_grpc.SttServiceServicer):
         request = next(request_iterator)
         partial = request.config.specification.partial_results
         recognizer = KaldiRecognizer(self.model, request.config.specification.sample_rate_hertz)
+        recognizer.SetMaxAlternatives(request.config.specification.max_alternatives)
+        recognizer.SetWords(request.config.specification.enable_word_time_offsets)
+
         for request in request_iterator:
             res = recognizer.AcceptWaveform(request.audio_content)
             if res:

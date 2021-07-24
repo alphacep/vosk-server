@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 import argparse
 import grpc
@@ -12,7 +12,9 @@ def gen(audio_file_name):
     specification = stt_service_pb2.RecognitionSpec(
         partial_results=True,
         audio_encoding='LINEAR16_PCM',
-        sample_rate_hertz=8000
+        sample_rate_hertz=8000,
+        enable_word_time_offsets=True,
+        max_alternatives=5,
     )
     streaming_config = stt_service_pb2.RecognitionConfig(specification=specification)
 
