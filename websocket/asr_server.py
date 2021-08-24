@@ -8,7 +8,7 @@ import pathlib
 import websockets
 import concurrent.futures
 import logging
-from vosk import Model, KaldiRecognizer
+from vosk import Model, SpkModel, KaldiRecognizer
 
 def process_chunk(rec, message):
     if message == '{"eof" : 1}':
@@ -20,6 +20,7 @@ def process_chunk(rec, message):
 
 async def recognize(websocket, path):
     global model
+    global spk_model
     global args
     global loop
     global pool
@@ -53,11 +54,13 @@ async def recognize(websocket, path):
         # Create the recognizer, word list is temporary disabled since not every model supports it
         if not rec:
             if phrase_list:
-                 rec = KaldiRecognizer(model, sample_rate, json.dumps(phrase_list, ensure_ascii=False))
+                rec = KaldiRecognizer(model, sample_rate, json.dumps(phrase_list, ensure_ascii=False))
             else:
-                 rec = KaldiRecognizer(model, sample_rate)
+                rec = KaldiRecognizer(model, sample_rate)
             rec.SetWords(show_words)
             rec.SetMaxAlternatives(max_alternatives)
+            if spk_model:
+                rec.SetSpkModel(spk_model)
 
         response, stop = await loop.run_in_executor(pool, process_chunk, rec, message)
         await websocket.send(response)
@@ -68,6 +71,7 @@ async def recognize(websocket, path):
 def start():
 
     global model
+    global spk_model
     global args
     global loop
     global pool
@@ -84,6 +88,7 @@ def start():
     args.interface = os.environ.get('VOSK_SERVER_INTERFACE', '0.0.0.0')
     args.port = int(os.environ.get('VOSK_SERVER_PORT', 2700))
     args.model_path = os.environ.get('VOSK_MODEL_PATH', 'model')
+    args.spk_model_path = os.environ.get('VOSK_SPK_MODEL_PATH')
     args.sample_rate = float(os.environ.get('VOSK_SAMPLE_RATE', 8000))
     args.max_alternatives = int(os.environ.get('VOSK_ALTERNATIVES', 0))
     args.show_words = bool(os.environ.get('VOSK_SHOW_WORDS', True))
@@ -100,6 +105,8 @@ def start():
     # pool = concurrent.futures.ThreadPoolExecutor(initializer=thread_init)
 
     model = Model(args.model_path)
+    spk_model = SpkModel(args.spk_model_path) if args.spk_model_path else None
+
     pool = concurrent.futures.ThreadPoolExecutor((os.cpu_count() or 1))
     loop = asyncio.get_event_loop()
 
