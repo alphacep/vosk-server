@@ -91,6 +91,9 @@ public:
     void
     on_run()
     {
+        // We output only text
+        ws_.text(true);
+
         // Set suggested timeout settings for the websocket
         ws_.set_option(
             websocket::stream_base::timeout::suggested(
@@ -172,8 +175,6 @@ public:
         const char *buf = boost::asio::buffer_cast<const char *>(buffer_.cdata());
         int len = static_cast<int>(buffer_.size());
         chunk_ = process_chunk(buf, len);
-
-        ws_.text(ws_.got_binary());
 
         ws_.async_write(
             boost::asio::const_buffer(chunk_.result.data(), chunk_.result.size()),

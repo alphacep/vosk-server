@@ -60,7 +60,7 @@ RUN \
     && cd /opt/vosk-server/grpc \
     && python3 -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. stt_service.proto \
     \
-    && rm -rf /opt/vosk-api \
+    && rm -rf /opt/vosk-api/src/*.o \
     && rm -rf /opt/kaldi \
     && rm -rf /root/.cache \
     && rm -rf /var/lib/apt/lists/*

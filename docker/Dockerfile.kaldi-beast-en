@@ -1,4 +1,4 @@
-FROM abdullah/kaldi-vosk-server-beast:latest
+FROM alphacep/kaldi-vosk-server-beast:latest
 
 ENV MODEL_VERSION 0.2
 RUN mkdir /opt/vosk-model-en \
@@ -9,7 +9,7 @@ RUN mkdir /opt/vosk-model-en \
    && rm -rf vosk-model-en-us-aspire-${MODEL_VERSION}.zip
 
 EXPOSE 2700
-WORKDIR /opt/vosk-server/websocket
+WORKDIR /opt/vosk-server/websocket-cpp
 ENV LD_LIBRARY_PATH /opt
 ENV VOSK_SHOW_WORDS False
 ENV VOSK_ALTERNATIVES 1
