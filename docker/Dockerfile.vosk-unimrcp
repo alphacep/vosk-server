@@ -1,51 +1,9 @@
-FROM debian:10.4
-
-ARG KALDI_MKL
+FROM alphacep/kaldi-vosk-server
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-        ca-certificates \
-        g++ \
-        bzip2 \
-        unzip \
-        make \
-        wget \
-        git \
-        python3 \
-        zlib1g-dev \
-        patch \
-        cmake \
-        xz-utils \
-        automake \
-        autoconf \
-        libtool \
-        pkg-config \
         sudo \
     && rm -rf /var/lib/apt/lists/*
-
-RUN \
-    git clone -b lookahead-1.8.0 --single-branch https://github.com/alphacep/kaldi /opt/kaldi \
-    && cd /opt/kaldi/tools \
-    && sed -i 's:status=0:exit 0:g' extras/check_dependencies.sh \
-    && sed -i 's:--enable-ngram-fsts:--enable-ngram-fsts --disable-bin:g' Makefile \
-    && make -j $(nproc) openfst cub \
-    && if [ "x$KALDI_MKL" != "x1" ] ; then \
-          extras/install_openblas_clapack.sh; \
-       else \
-          extras/install_mkl.sh; \
-       fi \
-    \
-    && cd /opt/kaldi/src \
-    && if [ "x$KALDI_MKL" != "x1" ] ; then \
-          ./configure --mathlib=OPENBLAS_CLAPACK --shared; \
-       else \
-          ./configure --mathlib=MKL --shared; \
-       fi \
-    && sed -i 's:-msse -msse2:-msse -msse2:g' kaldi.mk \
-    && sed -i 's: -O1 : -O3 :g' kaldi.mk \
-    && make -j $(nproc) online2 lm rnnlm \
-    && find . -name "*.o" -exec rm {} \; \
-    && rm -rf /opt/kaldi/egs
 
 RUN \
     mkdir -p /opt/unimrcp-deps && wget http://www.unimrcp.org/project/component-view/unimrcp-deps-1-6-0-tar-gz/download -O - | tar -xz --strip-components=1 --directory /opt/unimrcp-deps \
@@ -54,7 +12,7 @@ RUN \
     && cd /opt/unimrcp/ \
     && ./bootstrap \
     && ./configure \
-    && make -j $(nproc) KALDI_ROOT=/opt/kaldi \
+    && VOSK_HOME=/opt/vosk-api make -j $(nproc) \
     && make install \
     && /sbin/ldconfig \
     && rm -rf /opt/unimrcp-deps \
