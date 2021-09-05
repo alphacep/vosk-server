@@ -26,31 +26,31 @@ class VoskMqttServer():
 
     def __on_mqtt_connect(self, client, obj, flags, rc):
         print('Connected to mqtt server')
-        self.client.subscribe(self.pid + '/stream/voice')
         self.client.subscribe(self.pid + '/lang')
+        self.client.subscribe(self.pid + '/stream/voice')
         self.client.subscribe(self.pid + '/stop')
 
     def __on_mqtt_message(self, client, obj, msg):
-        transcribe = ''
-        shouldStopProcessing = False
 
-        if msg.topic.endswith('/stop'):
-            transcribe = self.recognizer.FinalResult()
-            shouldStopProcessing = True
-        elif msg.topic.endswith('/lang'):
+        if msg.topic.endswith('/lang'):
             self.__init_kaldi_recognizer(self.__get_model_path(msg.payload.decode('utf-8')))
+
+        elif msg.topic.endswith('/stop'):
+            transcribe = self.recognizer.FinalResult()
+            data = json.loads(transcribe)
+            print(data)
+            if data and data['text']:
+                self.client.publish(self.pid + '/finalTranscribe', str(data))
+            print('Disconnecting...')
+            self.client.disconnect()
+
         elif msg.topic.endswith('/voice'):
             if self.recognizer.AcceptWaveform(msg.payload):
                 transcribe = self.recognizer.Result()
-
-        data = json.loads(transcribe)
-        if data and data['text']:
-            self.client.publish(self.pid + '/finalTranscribe', str(data))
-            print(data)
-
-        if shouldStopProcessing:
-            print('Disconnecting...')
-            self.client.disconnect()
+                data = json.loads(transcribe)
+                print(data)
+                if data and data['text']:
+                    self.client.publish(self.pid + '/finalTranscribe', str(data))
 
     def __get_model_path(self, lang='ru'):
         return 'model-' + lang

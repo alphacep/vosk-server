@@ -56,9 +56,6 @@ RUN \
     && python3 ./setup.py install \
     \
     && git clone https://github.com/alphacep/vosk-server /opt/vosk-server \
-    && pip3 install grpcio-tools \
-    && cd /opt/vosk-server/grpc \
-    && python3 -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. stt_service.proto \
     \
     && rm -rf /opt/vosk-api/src/*.o \
     && rm -rf /opt/kaldi \
