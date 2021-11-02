@@ -1,75 +1,67 @@
 #!/usr/bin/env python3
 
+import json
+import os
+import sys
 import asyncio
 import websockets
-import sys
-from pyaudio import PyAudio, Stream, paInt16
-from contextlib import asynccontextmanager, contextmanager, AsyncExitStack
-from typing import AsyncGenerator, Generator
+import logging
+import sounddevice as sd
+import argparse
 
-@contextmanager
-def _pyaudio() -> Generator[PyAudio, None, None]:
-    p = PyAudio()
+def int_or_str(text):
+    """Helper function for argument parsing."""
     try:
-        yield p
-    finally:
-        print('Terminating PyAudio object')
-        p.terminate()
+        return int(text)
+    except ValueError:
+        return text
 
-@contextmanager
-def _pyaudio_open_stream(p: PyAudio, *args, **kwargs) -> Generator[Stream, None, None]:
-    s = p.open(*args, **kwargs)
-    try:
-        yield s
-    finally:
-        print('Closing PyAudio Stream')
-        s.close()
+def callback(indata, frames, time, status):
+    """This is called (from a separate thread) for each audio block."""
+    loop.call_soon_threadsafe(audio_queue.put_nowait, bytes(indata))
 
-@asynccontextmanager
-async def _polite_websocket(ws: websockets.WebSocketClientProtocol) -> AsyncGenerator[websockets.WebSocketClientProtocol, None]:
-    try:
-        yield ws
-    finally:
-        print('Terminating connection')
-        await ws.send('{"eof" : 1}')
-        print(await ws.recv())
+async def run_test():
 
-async def run_test(uri):
-    async with AsyncExitStack() as stack:
-        ws = await stack.enter_async_context(websockets.connect(uri))
-        print(f'Connected to {uri}')
-        print('Type Ctrl-C to exit')
-        ws = await stack.enter_async_context(_polite_websocket(ws))
-        p = stack.enter_context(_pyaudio())
-        s = stack.enter_context(_pyaudio_open_stream(p,
-            format = paInt16, 
-            channels = 1,
-            rate = 8000,
-            input = True, 
-            frames_per_buffer = 8000))
-        while True:
-            data = s.read(8000)
-            if len(data) == 0:
-                break
-            await ws.send(data)
-            print(await ws.recv())
+    with sd.RawInputStream(samplerate=args.samplerate, blocksize = 4000, device=args.device, dtype='int16',
+                           channels=1, callback=callback) as device:
 
-if len(sys.argv) == 2:
-    server = sys.argv[1]
-else:
-    server = 'localhost:2700'
+        async with websockets.connect(args.uri) as websocket:
+        
+            while True:
+                data = await audio_queue.get()
+                await websocket.send(data)
+                print (await websocket.recv())
 
-try:
+            await websocket.send('{"eof" : 1}')
+            print (await websocket.recv())
+
+async def main():
+
+    global args
+    global loop
+    global audio_queue
+
+    parser = argparse.ArgumentParser(add_help=False)
+    parser.add_argument('-l', '--list-devices', action='store_true',
+                        help='show list of audio devices and exit')
+    args, remaining = parser.parse_known_args()
+    if args.list_devices:
+        print(sd.query_devices())
+        parser.exit(0)
+    parser = argparse.ArgumentParser(description="ASR Server",
+                                     formatter_class=argparse.RawDescriptionHelpFormatter,
+                                     parents=[parser])
+    parser.add_argument('-u', '--uri', type=str, metavar='URL',
+                        help='Server URL', default='ws://localhost:2700')
+    parser.add_argument('-d', '--device', type=int_or_str,
+                        help='input device (numeric ID or substring)')
+    parser.add_argument('-r', '--samplerate', type=int, help='sampling rate', default=16000)
+    args = parser.parse_args(remaining)
     loop = asyncio.get_event_loop()
-    loop.run_until_complete(
-        run_test('ws://' + server))
-except (Exception, KeyboardInterrupt) as e:
-    loop.stop()
-    loop.run_until_complete(
-        loop.shutdown_asyncgens())
-    if isinstance(e, KeyboardInterrupt):
-        print('Bye')
-        exit(0)
-    else:
-        print(f'Oops! {e}')
-        exit(1)
+    audio_queue = asyncio.Queue()
+
+    logging.basicConfig(level=logging.INFO)
+    await run_test()
+
+if __name__ == '__main__':
+    asyncio.run(main())

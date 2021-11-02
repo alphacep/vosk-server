@@ -4,7 +4,7 @@ import asyncio
 import websockets
 import sys
 
-async def hello(uri):
+async def run_test(uri):
     async with websockets.connect(uri) as websocket:
         wf = open(sys.argv[1], "rb")
         while True:
@@ -20,4 +20,4 @@ async def hello(uri):
         print (await websocket.recv())
 
 asyncio.get_event_loop().run_until_complete(
-    hello('ws://localhost:2700'))
+    run_test('ws://localhost:2700'))
