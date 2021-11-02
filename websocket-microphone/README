@@ -1,0 +1,8 @@
+An example of the local webserver taking audio from microphone and
+sending it to the clients around. Good for centralized speech recognition
+on the desktop where you might have multiple clients consuming
+recognition results.
+
+Websockets protocol might not be optimal here, something like MQTT might
+work as well. Subject to redesign.
+
