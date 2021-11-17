@@ -20,13 +20,13 @@ RUN \
     && rm -rf /opt/kaldi \
     && rm -rf /root/.cache
 
-ENV MODEL_VERSION 0.2
+ENV MODEL_VERSION 0.22
 RUN mkdir /opt/kaldi \
    && cd /opt/kaldi \
-   && wget -q http://alphacephei.com/kaldi/models/vosk-model-en-us-aspire-${MODEL_VERSION}.zip \
-   && unzip vosk-model-en-us-aspire-${MODEL_VERSION}.zip \
-   && mv vosk-model-en-us-aspire-${MODEL_VERSION} model \
-   && rm -rf vosk-model-en-us-aspire-${MODEL_VERSION}.zip
+   && wget -q http://alphacephei.com/kaldi/models/vosk-model-en-us-${MODEL_VERSION}.zip \
+   && unzip vosk-model-en-us-${MODEL_VERSION}.zip \
+   && mv vosk-model-en-us-${MODEL_VERSION} model \
+   && rm -rf vosk-model-en-us-${MODEL_VERSION}.zip
 
 EXPOSE 1544
 EXPOSE 8060

@@ -6,16 +6,18 @@ import sys
 import srt
 import json
 import datetime
+import wave
 
 WORDS_PER_LINE = 7
 
 async def run_test(uri):
     async with websockets.connect(uri) as websocket:
-        wf = open(sys.argv[1], "rb")
+        wf = wave.open(sys.argv[1], "rb")
+        await websocket.send('{ "config" : { "sample_rate" : %d } }' % (wf.getframerate()))
 
         results = []
         while True:
-            data = wf.read(8000)
+            data = wf.readframes(8000)
 
             if len(data) == 0:
                 break

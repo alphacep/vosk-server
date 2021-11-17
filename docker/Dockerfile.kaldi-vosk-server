@@ -1,4 +1,4 @@
-FROM debian:10.4
+FROM debian:11
 
 ARG KALDI_MKL
 

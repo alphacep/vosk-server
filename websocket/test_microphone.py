@@ -26,7 +26,8 @@ async def run_test():
                            channels=1, callback=callback) as device:
 
         async with websockets.connect(args.uri) as websocket:
-        
+            await websocket.send('{ "config" : { "sample_rate" : %d } }' % (device.samplerate))
+
             while True:
                 data = await audio_queue.get()
                 await websocket.send(data)

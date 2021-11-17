@@ -9,8 +9,10 @@ async def run_test(uri):
 
         proc = await asyncio.create_subprocess_exec(
                        'ffmpeg', '-nostdin', '-loglevel', 'quiet', '-i', sys.argv[1],
-                       '-ar', '8000', '-ac', '1', '-f', 's16le', '-',
+                       '-ar', '16000', '-ac', '1', '-f', 's16le', '-',
                        stdout=asyncio.subprocess.PIPE)
+
+        await websocket.send('{ "config" : { "sample_rate" : 16000 } }')
 
         while True:
             data = await proc.stdout.read(8000)
