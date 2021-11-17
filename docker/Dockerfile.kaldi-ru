@@ -1,6 +1,6 @@
 FROM alphacep/kaldi-vosk-server:latest
 
-ENV RUVERSION 0.10
+ENV RUVERSION 0.22
 RUN mkdir /opt/vosk-model-ru \
    && cd /opt/vosk-model-ru \
    && wget -q http://alphacephei.com/kaldi/models/vosk-model-ru-${RUVERSION}.zip \
