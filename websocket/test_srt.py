@@ -16,8 +16,9 @@ async def run_test(uri):
         await websocket.send('{ "config" : { "sample_rate" : %d } }' % (wf.getframerate()))
 
         results = []
+        buffer_size = int(wf.getframerate() * 0.2) # 0.2 seconds of audio
         while True:
-            data = wf.readframes(8000)
+            data = wf.readframes(buffer_size)
 
             if len(data) == 0:
                 break

@@ -12,8 +12,9 @@ async def run_test(uri):
                     { "phrase_list" : ["zero one two three four five", "six seven eight nine oh"],
                       "sample_rate" : %d,
                       "words" : 0}}''' % (wf.getframerate()))
+        buffer_size = int(wf.getframerate() * 0.2) # 0.2 seconds of audio
         while True:
-            data = wf.readframes(4000)
+            data = wf.readframes(buffer_size)
 
             if len(data) == 0:
                 break
