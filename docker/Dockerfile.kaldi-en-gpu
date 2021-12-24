@@ -1,0 +1,13 @@
+FROM alphacep/kaldi-vosk-server-gpu:latest
+
+ENV MODEL_VERSION 0.22
+RUN \
+   cd /opt/vosk-server/websocket-gpu-batch \
+   && wget -q http://alphacephei.com/kaldi/models/vosk-model-en-us-${MODEL_VERSION}.zip \
+   && unzip vosk-model-en-us-${MODEL_VERSION}.zip \
+   && mv vosk-model-en-us-${MODEL_VERSION} model \
+   && rm -rf vosk-model-en-us-${MODEL_VERSION}.zip
+
+EXPOSE 2700
+WORKDIR /opt/vosk-server/websocket-gpu-batch
+CMD [ "python3", "./asr_server_gpu.py" ]
