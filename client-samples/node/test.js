@@ -8,7 +8,7 @@ ws.on('open', function open() {
       ws.send(chunk);
   });
   readStream.on('end', function () {
-      ws.send('{"eof" : 1}');
+      ws.send('{"eof" : 1}\0');
   });
 });
 
