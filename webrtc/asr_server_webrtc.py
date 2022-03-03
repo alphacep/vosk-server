@@ -26,7 +26,6 @@ vosk_key_file = os.environ.get('VOSK_KEY_FILE', None)
 
 model = Model(vosk_model_path)
 pool = concurrent.futures.ThreadPoolExecutor((os.cpu_count() or 1))
-loop = asyncio.get_event_loop()
 
 def process_chunk(rec, message):
     if rec.AcceptWaveform(message):
@@ -63,6 +62,7 @@ class KaldiTask:
             self.__audio_task = None
 
     async def __run_audio_xfer(self):
+        loop = asyncio.get_running_loop()
         dataframes = bytearray(b"")
         while True:
             frame = await self.__track.recv()
