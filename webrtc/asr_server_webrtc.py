@@ -73,10 +73,10 @@ class KaldiTask:
     async def __run_audio_xfer(self):
         loop = asyncio.get_running_loop()
         dataframes = bytearray(b"")
+        max_frames_len = 8000
         while True:
             frame = await self.__track.recv()
             frame = self.__resampler.resample(frame)
-            max_frames_len = 8000
             message = frame.planes[0].to_bytes()
             recv_frames = bytearray(message)
             dataframes += recv_frames
@@ -106,6 +106,7 @@ async def offer(request):
 
     @pc.on('datachannel')
     async def on_datachannel(channel):
+        channel.send('{}') # Dummy message to make the UI change to "Listening"
         await kaldi.set_text_channel(channel)
         await kaldi.start()
 
