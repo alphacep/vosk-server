@@ -1,30 +1,43 @@
-# webrtc vosk-server  
+# webrtc vosk-server
 
+## Setup environment and run it.
 
-## Setup environment and run it. 
-### Set model path  
-Setup path to ./model  
-The models can be download from here https://alphacephei.com/vosk/models   
+### Set model path
 
-### python environment   
-The sample can work in python 3.8 
-$ pip install aiortc aiohttp aiorpc vosk  
-If your system install aiortc failed, please install gcc in your environment and use pip to install aiortc again.  
+Setup path to ./model
+The models can be download from here https://alphacephei.com/vosk/models
 
-### Execution in local 
-$ python asr_server_webrtc.py  
-Open chrome browser with URL http://0.0.0.0:2700 and demo is there.   
+### Python environment
 
-But if your environment cannot run ,then do the following steps. 
+The sample can work in python 3.8
 
-chrome://flags/#enable-webrtc-hide-local-ips-with-mdns  
-Enable this flag.   
+```sh
+$ python3 -m pip install aiortc aiohttp aiorpc vosk
+```
 
-chrome://flags/#unsafely-treat-insecure-origin-as-secure  
-Enable this flag and add http://0.0.0.0:2700 in list.   
+If your system fails installing aiortc, please install gcc in your environment and use pip to install aiortc again.
 
-Click Relaunch button.  
+### Execution in local
 
-Chrome reopen URL http://0.0.0.0:2700 again.  
+Run the server:
 
+```sh
+$ python3 asr_server_webrtc.py
+```
+
+Now, open a web browser with URL http://localhost:2700/.
+
+### Execution in LAN
+
+To test the demo from another computer on the LAN, the web page must be served through HTTPS. This is because modern web browsers (such as Chrome, Firefox) don't allow access to the microphone unless the host is `localhost` or the page is served securely.
+
+Thus, an SSL certificate is required to test the demo from other computers or smartphones. An untrusted self-signed certificate will work fine on most browsers (iOS Safari is the exception). You can use [mkcert](https://github.com/FiloSottile/mkcert) to make your own self-signed *cert* and *key* files.
+
+```sh
+$ export VOSK_CERT_FILE="/path/to/cert.pem"
+$ export VOSK_KEY_FILE="/path/to/key.pem"
+$ python3 asr_server_webrtc.py
+```
+
+Now, in the other computer, open a web browser with URL https://SERVER_IP:2700/, replacing `SERVER_IP` with the IP address of your Vosk server.
 
