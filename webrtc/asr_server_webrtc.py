@@ -22,19 +22,28 @@ vosk_port = int(os.environ.get('VOSK_SERVER_PORT', 2700))
 vosk_model_path = os.environ.get('VOSK_MODEL_PATH', 'model')
 vosk_sample_rate = float(os.environ.get('VOSK_SAMPLE_RATE', 8000))
 vosk_cert_file = os.environ.get('VOSK_CERT_FILE', None)
+vosk_key_file = os.environ.get('VOSK_KEY_FILE', None)
 
 model = Model(vosk_model_path)
 pool = concurrent.futures.ThreadPoolExecutor((os.cpu_count() or 1))
-loop = asyncio.get_event_loop()
 
 def process_chunk(rec, message):
-    if rec.AcceptWaveform(message):
-        o = json.loads(rec.Result())
-        if 'result' in o.keys():
-            return '{"text":"' +o['text']+ '"}'
-        return rec.Result()
+    try:
+        res = rec.AcceptWaveform(message)
+    except Exception:
+        result = None
     else:
-        return rec.PartialResult()
+        if res > 0:
+            result = rec.Result()
+            o = json.loads(result)
+            if 'result' in o:
+                result = '{"text": "' +o['text']+ '"}'
+        else:
+            result = rec.PartialResult()
+            o = json.loads(result)
+            if o['partial'] == '':
+                result = None
+    return result
 
 
 class KaldiTask:
@@ -62,19 +71,21 @@ class KaldiTask:
             self.__audio_task = None
 
     async def __run_audio_xfer(self):
+        loop = asyncio.get_running_loop()
         dataframes = bytearray(b"")
+        max_frames_len = 8000
         while True:
             frame = await self.__track.recv()
             frame = self.__resampler.resample(frame)
-            max_frames_len = 8000
             message = frame.planes[0].to_bytes()
             recv_frames = bytearray(message)
             dataframes += recv_frames
             if len(dataframes) > max_frames_len:
                 wave_bytes = bytes(dataframes)
-                response = await loop.run_in_executor(pool, process_chunk, self.__recognizer, wave_bytes)
-                print(response)
-                self.__channel.send(response)
+                result = await loop.run_in_executor(pool, process_chunk, self.__recognizer, wave_bytes)
+                if result is not None:
+                    print(result)
+                    self.__channel.send(result)
                 dataframes = bytearray(b"")
 
 async def index(request):
@@ -95,6 +106,7 @@ async def offer(request):
 
     @pc.on('datachannel')
     async def on_datachannel(channel):
+        channel.send('{}') # Dummy message to make the UI change to "Listening"
         await kaldi.set_text_channel(channel)
         await kaldi.start()
 
@@ -129,7 +141,7 @@ if __name__ == '__main__':
 
     if vosk_cert_file:
         ssl_context = ssl.SSLContext()
-        ssl_context.load_cert_chain(vosk_cert_file)
+        ssl_context.load_cert_chain(vosk_cert_file, vosk_key_file)
     else:
         ssl_context = None
 
