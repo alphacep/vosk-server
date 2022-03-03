@@ -60,14 +60,14 @@ function negotiate() {
 }
 
 function performRecvText(str) {
-    htmlStr = document.getElementById('list').innerHTML
-    listItemHtmlStr = "<div>" + str + "</div>\n";
-    htmlStr += listItemHtmlStr;
-    document.getElementById('list').innerHTML = htmlStr; 
+    htmlStr = document.getElementById('text').innerHTML;
+    htmlStr += '<div>' + str + '</div>\n';
+    document.getElementById('text').innerHTML = htmlStr;
+    document.getElementById('partial').innerText = '> ';
 }
 
 function performRecvPartial(str) {
-    document.getElementById('partial').innerText = str
+    document.getElementById('partial').innerText = '> ' + str;
 }
 
 function start() {
