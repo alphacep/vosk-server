@@ -18,6 +18,7 @@ async def recognize(websocket, path):
     global model
 
     rec = None
+    sample_rate = args.sample_rate
 
     logging.info(f'Connection from {websocket.remote_address}');
 
@@ -78,6 +79,7 @@ def start():
 
     args.interface = os.environ.get('VOSK_SERVER_INTERFACE', '0.0.0.0')
     args.port = int(os.environ.get('VOSK_SERVER_PORT', 2700))
+    args.sample_rate = float(os.environ.get('VOSK_SAMPLE_RATE', 8000))
 
     GpuInit()
 
