@@ -79,9 +79,7 @@ function start() {
 
     pc = new RTCPeerConnection(config);
 
-    var parameters = {};
-
-    dc = pc.createDataChannel('chat', parameters);
+    dc = pc.createDataChannel('result');
     dc.onclose = function () {
         clearInterval(dcInterval);
         console.log('Closed data channel');
@@ -90,16 +88,25 @@ function start() {
     dc.onopen = function () {
         console.log('Opened data channel');
     };
-    dc.onmessage = function (evt) {
-        if(evt.data !== undefined) {
-            getData =JSON.parse(evt.data)
-            if(getData.text !== undefined) {
-                performRecvText(getData.text)
-            } else if (getData.partial !== undefined) {
-                performRecvPartial(getData.partial)
-            }
+    dc.onmessage = function (messageEvent) {
+        statusField.innerText = "Listening... say something";
+
+        if (!messageEvent.data) {
+            return;
         }
-        statusField.innerText = 'Listening...';
+
+        let voskResult;
+        try {
+            voskResult = JSON.parse(messageEvent.data);
+        } catch (error) {
+            console.error(`ERROR: ${error.message}`);
+            return;
+        }
+        if ((voskResult.text?.length || 0) > 0) {
+            performRecvText(voskResult.text);
+        } else if ((voskResult.partial?.length || 0) > 0) {
+            performRecvPartial(voskResult.partial);
+        }
     };
 
     pc.oniceconnectionstatechange = function () {
