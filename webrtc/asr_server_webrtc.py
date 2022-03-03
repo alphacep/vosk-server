@@ -22,6 +22,7 @@ vosk_port = int(os.environ.get('VOSK_SERVER_PORT', 2700))
 vosk_model_path = os.environ.get('VOSK_MODEL_PATH', 'model')
 vosk_sample_rate = float(os.environ.get('VOSK_SAMPLE_RATE', 8000))
 vosk_cert_file = os.environ.get('VOSK_CERT_FILE', None)
+vosk_key_file = os.environ.get('VOSK_KEY_FILE', None)
 
 model = Model(vosk_model_path)
 pool = concurrent.futures.ThreadPoolExecutor((os.cpu_count() or 1))
@@ -129,7 +130,7 @@ if __name__ == '__main__':
 
     if vosk_cert_file:
         ssl_context = ssl.SSLContext()
-        ssl_context.load_cert_chain(vosk_cert_file)
+        ssl_context.load_cert_chain(vosk_cert_file, vosk_key_file)
     else:
         ssl_context = None
 
