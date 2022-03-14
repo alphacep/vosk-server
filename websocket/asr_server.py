@@ -9,6 +9,7 @@ import websockets
 import concurrent.futures
 import logging
 from vosk import Model, SpkModel, KaldiRecognizer
+from asr_server_filter import Filter
 
 def process_chunk(rec, message):
     if message == '{"eof" : 1}':
@@ -30,6 +31,8 @@ async def recognize(websocket, path):
     sample_rate = args.sample_rate
     show_words = args.show_words
     max_alternatives = args.max_alternatives
+    apply_filter = args.apply_filter
+    p_filter = None if not apply_filter else Filter()
 
     logging.info('Connection from %s', websocket.remote_address);
 
@@ -63,9 +66,12 @@ async def recognize(websocket, path):
                 rec.SetSpkModel(spk_model)
 
         response, stop = await loop.run_in_executor(pool, process_chunk, rec, message)
+
+        if apply_filter:
+            response = p_filter.filter(response)
+
         await websocket.send(response)
         if stop: break
-
 
 
 def start():
@@ -92,6 +98,7 @@ def start():
     args.sample_rate = float(os.environ.get('VOSK_SAMPLE_RATE', 8000))
     args.max_alternatives = int(os.environ.get('VOSK_ALTERNATIVES', 0))
     args.show_words = bool(os.environ.get('VOSK_SHOW_WORDS', True))
+    args.apply_filter = bool(os.environ.get('VOSK_FILTER', True))
 
     if len(sys.argv) > 1:
        args.model_path = sys.argv[1]
