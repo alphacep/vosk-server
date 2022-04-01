@@ -22,9 +22,9 @@ async def recognize(websocket, path):
     global model
     global spk_model
     global args
-    global loop
     global pool
 
+    loop = asyncio.get_running_loop()
     rec = None
     phrase_list = None
     sample_rate = args.sample_rate
@@ -68,12 +68,11 @@ async def recognize(websocket, path):
 
 
 
-def start():
+async def start():
 
     global model
     global spk_model
     global args
-    global loop
     global pool
 
     # Enable loging if needed
@@ -108,15 +107,10 @@ def start():
     spk_model = SpkModel(args.spk_model_path) if args.spk_model_path else None
 
     pool = concurrent.futures.ThreadPoolExecutor((os.cpu_count() or 1))
-    loop = asyncio.get_event_loop()
 
-    start_server = websockets.serve(
-        recognize, args.interface, args.port)
-
-    logging.info("Listening on %s:%d", args.interface, args.port)
-    loop.run_until_complete(start_server)
-    loop.run_forever()
+    async with websockets.serve(recognize, args.interface, args.port):
+        await asyncio.Future()
 
 
 if __name__ == '__main__':
-    start()
+    asyncio.run(start())

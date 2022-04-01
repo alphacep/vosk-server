@@ -58,7 +58,7 @@ async def main():
                         help='input device (numeric ID or substring)')
     parser.add_argument('-r', '--samplerate', type=int, help='sampling rate', default=16000)
     args = parser.parse_args(remaining)
-    loop = asyncio.get_event_loop()
+    loop = asyncio.get_running_loop()
     audio_queue = asyncio.Queue()
 
     logging.basicConfig(level=logging.INFO)

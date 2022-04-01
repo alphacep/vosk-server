@@ -46,5 +46,4 @@ async def run_test(uri):
         print(srt.compose(subs))
 
 
-asyncio.get_event_loop().run_until_complete(
-    run_test('ws://localhost:2700'))
+asyncio.run(run_test('ws://localhost:2700'))

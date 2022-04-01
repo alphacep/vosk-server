@@ -23,13 +23,13 @@ def callback(indata, frames, time, status):
     """This is called (from a separate thread) for each audio block."""
     loop.call_soon_threadsafe(audio_queue.put_nowait, bytes(indata))
 
-async def client_loop(websocket, path):
+async def serve_client(websocket, path):
     clients.add(websocket)
     print ("Client connected from", websocket)
     await websocket.wait_closed()
     clients.remove(websocket)
 
-async def recognize_loop():
+async def recognize_microphone():
     global audio_queue
 
     model = Model(args.model)
@@ -75,15 +75,14 @@ async def main():
     args = parser.parse_args(remaining)
     
     logging.basicConfig(level=logging.INFO)
-    loop = asyncio.get_event_loop()
+    loop = asyncio.get_running_loop()
     clients = set()
 
     logging.info("Listening on %s:%d", args.interface, args.port)
-    
+
     await asyncio.gather(
-	websockets.serve(client_loop, args.interface, args.port), 
-	recognize_loop())
+        websockets.serve(serve_client, args.interface, args.port),
+                         recognize_microphone())
 
 if __name__ == '__main__':
     asyncio.run(main())
-

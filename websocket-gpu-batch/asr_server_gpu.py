@@ -13,7 +13,6 @@ from vosk import BatchModel, BatchRecognizer, GpuInit
 
 async def recognize(websocket, path):
     global args
-    global loop
     global pool
     global model
 
@@ -62,11 +61,10 @@ async def recognize(websocket, path):
     res = rec.Result()
     await websocket.send(res)
 
-def start():
+async def start():
 
     global model
     global args
-    global loop
 
     # Enable loging if needed
     #
@@ -85,15 +83,8 @@ def start():
 
     model = BatchModel()
 
-    loop = asyncio.get_event_loop()
-
-    start_server = websockets.serve(
-        recognize, args.interface, args.port)
-
-    logging.info("Listening on %s:%d", args.interface, args.port)
-    loop.run_until_complete(start_server)
-    loop.run_forever()
-
+    async with websockets.serve(recognize, args.interface, args.port):
+        await asyncio.Future()
 
 if __name__ == '__main__':
-    start()
+    asyncio.run(start())
