@@ -1,6 +1,6 @@
 FROM alphacep/kaldi-vosk-server:latest
 
-ENV MODEL_VERSION 0.6
+ENV MODEL_VERSION 0.21
 RUN mkdir /opt/vosk-model-de \
    && cd /opt/vosk-model-de \
    && wget -q https://alphacephei.com/vosk/models/vosk-model-de-${MODEL_VERSION}.zip \
