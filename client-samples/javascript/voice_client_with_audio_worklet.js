@@ -1,20 +1,23 @@
-var source;
 var context;
+var source;
 var processor;
 var streamLocal;
-var inputArea;
 var webSocket;
+var inputArea;
 const sampleRate = 8000;
 const wsURL = 'ws://localhost:2700';
-
+var initComplete = false;
 
 (function () {
     document.addEventListener('DOMContentLoaded', (event) => {
         inputArea = document.getElementById('q');
 
         const listenButton = document.getElementById('listen');
+        const stopListeningButton = document.getElementById('stopListening');
 
-        listenButton.addEventListener('mousedown', function (event) {
+        listenButton.addEventListener('mousedown', function () {
+            listenButton.disabled = true;
+
             initWS();
             navigator.mediaDevices.getUserMedia({
                 audio: {
@@ -24,10 +27,13 @@ const wsURL = 'ws://localhost:2700';
                     sampleRate
                 }, video: false
             }).then(handleSuccess);
-            listenButton.style.color= 'green';
+            listenButton.style.color = 'green';
+            initComplete = true;
         });
 
-        listenButton.addEventListener('mouseup', function (event) {
+        stopListeningButton.addEventListener('mouseup', function () {
+            if (initComplete === true) {
+
             webSocket.send('{"eof" : 1}');
             webSocket.close();
 
@@ -38,7 +44,11 @@ const wsURL = 'ws://localhost:2700';
             if (streamLocal.active) {
                 streamLocal.getTracks()[0].stop();
             }
-            listenButton.style.color= 'black';
+            listenButton.style.color = 'black';
+                listenButton.disabled = false;
+                initComplete = false;
+                inputArea.innerText = ""
+            }
         });
 
     });

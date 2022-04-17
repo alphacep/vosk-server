@@ -7,14 +7,18 @@ var inputArea;
 const bufferSize = 8192;
 const sampleRate = 8000;
 const wsURL = 'ws://localhost:2700';
+var initComplete = false;
 
 (function () {
     document.addEventListener('DOMContentLoaded', (event) => {
         inputArea = document.getElementById('q');
 
-        const listenButton = document.getElementById('listen');
+        const listenButton = document.getElementById('listenWithScript');
+        const stopListeningButton = document.getElementById('stopListeningWithScript');
 
         listenButton.addEventListener('mousedown', function () {
+            listenButton.disabled = true;
+
             initWS();
             navigator.mediaDevices.getUserMedia({
                 audio: {
@@ -25,18 +29,25 @@ const wsURL = 'ws://localhost:2700';
                 }, video: false
             }).then(handleSuccess);
             listenButton.style.color = 'green';
+            initComplete = true;
         });
 
-        listenButton.addEventListener('mouseup', function () {
-            webSocket.send('{"eof" : 1}');
-            webSocket.close();
+        stopListeningButton.addEventListener('mouseup', function () {
+            if (initComplete === true) {
 
-            source.disconnect(processor);
-            processor.disconnect(context.destination);
-            if (streamLocal.active) {
-                streamLocal.getTracks()[0].stop();
+                webSocket.send('{"eof" : 1}');
+                webSocket.close();
+
+                source.disconnect(processor);
+                processor.disconnect(context.destination);
+                if (streamLocal.active) {
+                    streamLocal.getTracks()[0].stop();
+                }
+                listenButton.style.color = 'black';
+                listenButton.disabled = false;
+                initComplete = false;
+                inputArea.innerText = ""
             }
-            listenButton.style.color = 'black';
         });
     });
 }())
