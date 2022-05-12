@@ -76,8 +76,8 @@ class KaldiTask:
         max_frames_len = 8000
         while True:
             frame = await self.__track.recv()
-            frame = self.__resampler.resample(frame)
-            message = frame.planes[0].to_bytes()
+            frames = self.__resampler.resample(frame)
+            message = frames[0].planes[0].to_bytes()
             recv_frames = bytearray(message)
             dataframes += recv_frames
             if len(dataframes) > max_frames_len:
