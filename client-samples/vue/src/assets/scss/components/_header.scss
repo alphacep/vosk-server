@@ -1,0 +1,64 @@
+.navigation__bar {
+
+  background-color: white !important;
+
+  font-family: $body-font-family;
+  .theme--dark.v-input {
+    margin: 25px 30px 0;
+  }
+  .custom-placeholer-color {
+    & .v-input__slot{
+      padding-right: 1px;
+      // width: 450px;
+    }
+    & input::placeholder {
+      color: #555555 !important;
+      font-size: 14px;
+      opacity: 1;
+    }
+    & label,
+    & input {
+      color: #555555 !important;
+      font-size: 14px;
+    }
+  }
+  .v-toolbar__items .v-btn__content{
+    text-transform: capitalize;
+    font-size: 12px;
+  }
+}
+
+.v-breadcrumbs{
+  margin-top: 5rem !important;
+  margin-bottom: 2rem !important;
+}
+
+.v-navigation-drawer{
+  .v-list-item__title{
+    font-weight: bold;
+  }
+  .v-navigation-drawer .v-list-group--disabled, .v-navigation-drawer .v-list-item--disabled
+
+  &__content{
+  .v-list-item .v-list-item__title, .v-list-item .v-list-item__subtitle{
+    white-space: pre-wrap;
+
+  }
+  .v-list-item{
+    // padding: 0 12px 0 12px !important;
+  
+  }
+}
+.v-list-item{
+  padding: 0 12px;
+
+}
+.v-list-group--disabled,.v-list-item--disabled{
+  cursor: not-allowed;
+pointer-events: none;
+  .v-list-item__title,.v-list-item__icon{
+    color:rgb(193 188 188 / 65%)  !important;
+
+  }
+}
+}
