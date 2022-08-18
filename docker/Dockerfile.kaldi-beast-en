@@ -1,4 +1,4 @@
-FROM alphacep/kaldi-vosk-server-beast:latest
+FROM alphacep/kaldi-vosk-server:latest
 
 ENV MODEL_VERSION 0.22
 RUN mkdir /opt/vosk-model-en \
