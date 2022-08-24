@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import json
-import logging
 import ssl
 import sys
 import os
@@ -20,12 +19,13 @@ ROOT = Path(__file__).parent
 vosk_interface = os.environ.get('VOSK_SERVER_INTERFACE', '0.0.0.0')
 vosk_port = int(os.environ.get('VOSK_SERVER_PORT', 2700))
 vosk_model_path = os.environ.get('VOSK_MODEL_PATH', 'model')
-vosk_sample_rate = float(os.environ.get('VOSK_SAMPLE_RATE', 8000))
 vosk_cert_file = os.environ.get('VOSK_CERT_FILE', None)
 vosk_key_file = os.environ.get('VOSK_KEY_FILE', None)
+vosk_dump_file = os.environ.get('VOSK_DUMP_FILE', None)
 
 model = Model(vosk_model_path)
 pool = concurrent.futures.ThreadPoolExecutor((os.cpu_count() or 1))
+dump_fd = None if vosk_dump_file is None else open(vosk_dump_file, "wb")
 
 def process_chunk(rec, message):
     try:
@@ -35,14 +35,8 @@ def process_chunk(rec, message):
     else:
         if res > 0:
             result = rec.Result()
-            o = json.loads(result)
-            if 'result' in o:
-                result = '{"text": "' +o['text']+ '"}'
         else:
             result = rec.PartialResult()
-            o = json.loads(result)
-            if o['partial'] == '':
-                result = None
     return result
 
 
@@ -72,21 +66,29 @@ class KaldiTask:
 
     async def __run_audio_xfer(self):
         loop = asyncio.get_running_loop()
-        dataframes = bytearray(b"")
-        max_frames_len = 8000
+
+        max_frames = 20
+        frames = []
         while True:
-            frame = await self.__track.recv()
-            frame = self.__resampler.resample(frame)
-            message = frame.planes[0].to_bytes()
-            recv_frames = bytearray(message)
-            dataframes += recv_frames
-            if len(dataframes) > max_frames_len:
-                wave_bytes = bytes(dataframes)
-                result = await loop.run_in_executor(pool, process_chunk, self.__recognizer, wave_bytes)
-                if result is not None:
-                    print(result)
-                    self.__channel.send(result)
-                dataframes = bytearray(b"")
+            fr = await self.__track.recv()
+            frames.append(fr)
+
+            # We need to collect frames so we don't send partial results too often
+            if len(frames) < max_frames:
+               continue
+
+            dataframes = bytearray(b'')
+            for fr in frames:
+                for rfr in self.__resampler.resample(fr):
+                    dataframes += bytes(rfr.planes[0])[:rfr.samples * 2]
+            frames.clear()
+
+            if dump_fd != None:
+                dump_fd.write(bytes(dataframes))
+
+            result = await loop.run_in_executor(pool, process_chunk, self.__recognizer, bytes(dataframes))
+            print(result)
+            self.__channel.send(result)
 
 async def index(request):
     content = open(str(ROOT / 'static' / 'index.html')).read()
@@ -127,7 +129,6 @@ async def offer(request):
     await pc.setRemoteDescription(offer)
     answer = await pc.createAnswer()
     await pc.setLocalDescription(answer)
-
 
     return web.Response(
         content_type='application/json',
