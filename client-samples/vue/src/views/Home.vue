@@ -73,7 +73,6 @@
         >“متابعة”</v-btn
       >
     </div>
-    <!-- Arafa: I add this condition sessionIdIsNull() -->
     <div class="text-center">
       <v-btn
         v-if="socketStatus == 'start' && isSocketInit && sessionIdIsNull()"
@@ -141,7 +140,7 @@ export default {
       });
     },
     switchSpeechRecognition(environment) {
-      localStorage.removeItem("session_id"); // Arafa : remove old session_id when starting new session
+      localStorage.removeItem("session_id"); // remove old session_id when starting new session
       this.isReadOnly = true;
       this.loading = true;
       this.socketStatus = "listening";
@@ -237,13 +236,12 @@ export default {
       }
     },
     enOfFile() {
-      // Arafa
       if (this.sessionIdIsNull()) {
         dictateService.endOfFile();
       }
     },
 
-    // Arafa : This method check if session_id is null or not
+    // This method check if session_id is null or not
     sessionIdIsNull() {
       if (dictateService.session_id) {
         return true;
@@ -252,8 +250,6 @@ export default {
       }
     },
 
-    // Arafa
-
     switchSpokenLang() {
       this.stopRecording();
 
@@ -261,6 +257,7 @@ export default {
         this.switchSpeechRecognition(EndPoints.SOCKET_BASE_URL);
       }
     },
+
     stopRecording() {
       // console.log('stop');
       dictateService.cancel();
@@ -270,6 +267,7 @@ export default {
       this.loading = false;
       // this.spokenLang=''
     },
+
     pauseRecording() {
       dictateService.pause();
       this.socketStatus = "pause";

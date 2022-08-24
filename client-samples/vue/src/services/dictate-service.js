@@ -40,11 +40,11 @@ export default {
     ws: null,
     MSG_STOP: 11,
     isEndOfFile: false,
-    session_id: null, // Arafa
+    session_id: null,
 
     init(cfg) {
         this.isEndOfFile = false;
-        this.session_id = null; // Arafa
+        this.session_id = null;
         this.config = cfg || {};
         this.config.server = this.config.server || SERVER;
         this.config.audioSourceId = this.config.audioSourceId;
@@ -176,7 +176,6 @@ export default {
             if (state == 1) {
                 // If blob is an audio blob
                 if (blob instanceof Blob) {
-                    // Arafa
                     if (blob.size > 0 && localStorage.getItem("session_id")) {
                         this.ws.send(blob);
                         this.config.onEvent(
@@ -191,9 +190,6 @@ export default {
                     }
                     // Otherwise it's the EOS tag (string)
                 } else {
-
-                    // Arafa
-
                     if (localStorage.getItem("session_id")) {
                         this.ws.send(blob);
                     }
@@ -205,7 +201,7 @@ export default {
                 }, 1500);
                 this.config.onError(
                     ERR_NETWORK,
-                    "Connection problem; please retry" // Arafa
+                    "Connection problem; please retry"
                     // "WebSocket: readyState!=1: " + state + ": failed to send: " + blob
                 );
             }
@@ -215,20 +211,16 @@ export default {
             }, 1500);
             this.config.onError(
                 ERR_CLIENT,
-                "Connection problem; please retry" // Arafa
+                "Connection problem; please retry"
                 // "No web socket connection: failed to send: " + blob
             );
         }
     },
     endOfFile() {
         this.pause();
-        // Arafa
-
         if (localStorage.getItem("session_id")) {
             this.ws.send('{"eof" : 1}');
         }
-
-        // Arafa
         this.isEndOfFile = true
     },
 
@@ -250,7 +242,6 @@ export default {
             .replace(/False/g, '"False"');
             // debugger
             data = JSON.parse(data);
-            // Arafa
             if (data.hasOwnProperty('session_id')) {
                 if (data.session_id) {
                     localStorage.setItem("session_id", data.session_id);
@@ -267,8 +258,6 @@ export default {
                     this.ws = null;
                 }
             }
-
-            // Arafa
 
             if (data) {
                 if (data.partial) {
@@ -375,10 +364,6 @@ export default {
     },
 };
 
-// Arafa
-
 window.onbeforeunload = function() {
     localStorage.removeItem('session_id');
 }
-
-// Arafa
