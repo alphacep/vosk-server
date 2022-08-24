@@ -1,0 +1,18 @@
+@font-face {
+  font-family: ZillaSlab;
+     font-style: normal;
+  src: url(../../assets/fonts/Zilla_Slab/ZillaSlab-Medium.ttf) format("opentype");
+}
+
+@font-face {
+  font-family: Cairo;  
+    font-weight: 500;
+  src: url(../../assets/fonts/Cairo/Cairo-Regular.ttf) format("opentype");
+}
+*{
+  font-family: 'ZillaSlab' !important;
+  
+}
+body{
+  overflow-x: hidden;
+}

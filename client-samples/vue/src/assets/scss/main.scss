@@ -1,0 +1,10 @@
+$color-pack: false;
+@import './variables.scss';
+
+@import "~vuetify/src/styles/styles.sass";
+@import '~vuetify/src/styles/settings/_variables';
+@import './mixins';
+@import './base';
+@import './typography';
+
+

@@ -1,0 +1,38 @@
+.breadcrumb {
+  margin-bottom: 0 !important;
+  margin-top: 3rem !important;
+}
+// .breadcrumb {
+//   opacity: 0.85;
+//   background: rgb(54, 159, 219);
+//   background: linear-gradient(
+//     311deg,
+//     rgba(54, 159, 219, 1) 11%,
+//     rgba(5, 25, 37, 1) 68%
+//   );
+//   display: flex;
+//   align-items: center;
+
+//   justify-content: center;
+
+//   &__auth{
+//       h3{
+//         font-size: 35px;
+//         font-weight: 600;
+//         color: white;
+//         text-align: center;
+//       }
+//       ul{
+//           li{
+//               a{
+//                   color: white;
+//                   &.v-breadcrumbs__item--disabled{
+//                     color: #d2cccf !important;
+
+//                   }
+//               }
+//           }
+//       }
+   
+//   }
+// }
