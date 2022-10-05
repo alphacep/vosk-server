@@ -5,7 +5,7 @@ set -x
 
 docker build --no-cache --build-arg KALDI_MKL=0 --file Dockerfile.kaldi-vosk-server --tag alphacep/kaldi-vosk-server:latest .
 
-for kind in ru en de cn fr es en-in grpc-en en-spk; do
+for kind in ru en de cn fr es en-in grpc-en en-spk ja; do
     docker build --file Dockerfile.kaldi-${kind} --tag alphacep/kaldi-${kind}:latest .
 done
 
