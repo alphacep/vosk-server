@@ -10,13 +10,41 @@ import concurrent.futures
 import logging
 from vosk import Model, SpkModel, KaldiRecognizer
 
+from vosk_text.inverse_text_normalization.ru.taggers.tokenize_and_classify import ClassifyFst
+from vosk_text.inverse_text_normalization.ru.verbalizers.verbalize_final import VerbalizeFinalFst
+from vosk_text.text_normalization.data_loader_utils import load_file, write_file
+from vosk_text.text_normalization.normalize import Normalizer
+from vosk_text.text_normalization.token_parser import TokenParser
+
+class InverseNormalizer(Normalizer):
+
+    def __init__(self, lang: str = 'en', cache_dir: str = None, overwrite_cache: bool = False):
+        self.tagger = ClassifyFst(cache_dir=cache_dir, overwrite_cache=overwrite_cache)
+        self.verbalizer = VerbalizeFinalFst()
+        self.parser = TokenParser()
+        self.lang = lang
+
+    def inverse_normalize(self, text: str, verbose: bool) -> str:
+        return self.normalize(text=text, verbose=verbose)
+
+normalizer = InverseNormalizer(lang="ru", cache_dir=".", overwrite_cache=False)
+
 def process_chunk(rec, message):
     if message == '{"eof" : 1}':
-        return rec.FinalResult(), True
+        jres = json.loads(rec.FinalResult())
+        if "text" in jres:
+             jres['text'] = normalizer.normalize(text=jres['text'])
+        return json.dumps(jres, ensure_ascii=False), True
     elif rec.AcceptWaveform(message):
-        return rec.Result(), False
+        jres = json.loads(rec.Result())
+        if "text" in jres:
+             jres['text'] = normalizer.normalize(text=jres['text'])
+        return json.dumps(jres, ensure_ascii=False), False
     else:
-        return rec.PartialResult(), False
+        jres = json.loads(rec.PartialResult())
+        if "partial" in jres:
+             jres['partial'] = normalizer.normalize(text=jres['partial'])
+        return json.dumps(jres, ensure_ascii=False), False
 
 async def recognize(websocket, path):
     global model
