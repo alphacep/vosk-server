@@ -45,6 +45,9 @@ async def recognize(websocket, path):
                 phrase_list = jobj['phrase_list']
             if 'sample_rate' in jobj:
                 sample_rate = float(jobj['sample_rate'])
+            if 'model' in jobj:
+                model = Model(jobj['model'])
+                model_changed = True
             if 'words' in jobj:
                 show_words = bool(jobj['words'])
             if 'max_alternatives' in jobj:
@@ -52,7 +55,8 @@ async def recognize(websocket, path):
             continue
 
         # Create the recognizer, word list is temporary disabled since not every model supports it
-        if not rec:
+        if not rec or model_changed:
+            model_changed = False
             if phrase_list:
                 rec = KaldiRecognizer(model, sample_rate, json.dumps(phrase_list, ensure_ascii=False))
             else:
