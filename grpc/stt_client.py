@@ -47,6 +47,8 @@ def run(audio_file_name):
     except grpc._channel._Rendezvous as err:
         print('Error code %s, message: %s' % (err._state.code, err._state.details))
 
+    stub = stt_service_pb2_grpc.StatsServiceStub(channel)
+    print (stub.GetStats(request=stt_service_pb2.google_dot_protobuf_dot_empty__pb2.Empty()))
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

@@ -24,6 +24,7 @@ import math
 import logging
 import json
 import grpc
+import time
 
 import stt_service_pb2
 import stt_service_pb2_grpc
@@ -42,6 +43,15 @@ vosk_sample_rate = float(os.environ.get('VOSK_SAMPLE_RATE', 8000))
 
 if len(sys.argv) > 1:
    vosk_model_path = sys.argv[1]
+
+class Stats:
+    def __init__(self):
+        self.n_streams = 0
+        self.n_total_streams = 0
+        self.max_chunk_rtf = 0
+        self.max_stream_rtf = 0
+
+stats = Stats()
 
 class SttServiceServicer(stt_service_pb2_grpc.SttServiceServicer):
     """Provides methods that implement functionality of route guide server."""
@@ -92,22 +102,58 @@ class SttServiceServicer(stt_service_pb2_grpc.SttServiceServicer):
     def StreamingRecognize(self, request_iterator, context):
         request = next(request_iterator)
         partial = request.config.specification.partial_results
-        recognizer = KaldiRecognizer(self.model, request.config.specification.sample_rate_hertz)
+        sample_rate = request.config.specification.sample_rate_hertz
+        recognizer = KaldiRecognizer(self.model, sample_rate)
         recognizer.SetMaxAlternatives(request.config.specification.max_alternatives)
         recognizer.SetWords(request.config.specification.enable_word_time_offsets)
 
+        start_time = time.time()
+        processed_bytes = 0
+        max_chunk_rtf = 0
+        stats.n_streams = stats.n_streams + 1
+        stats.n_total_streams = stats.n_total_streams + 1
+
         for request in request_iterator:
+
+            start_chunk_time = time.time()
+            chunk_processed_bytes = len(request.audio_content)
+            processed_bytes += chunk_processed_bytes
+
             res = recognizer.AcceptWaveform(request.audio_content)
+
+            chunk_time = time.time() - start_chunk_time
+            max_chunk_rtf = max(max_chunk_rtf, chunk_time / (chunk_processed_bytes / (2 * sample_rate)))
+
             if res:
                 yield self.get_response(recognizer.Result())
             elif partial:
                 yield self.get_response(recognizer.PartialResult())
+
         yield self.get_response(recognizer.FinalResult())
+
+        execution_time = time.time() - start_time
+        audio_time = processed_bytes / (2 * sample_rate)
+        rtf = execution_time / audio_time
+        stats.max_stream_rtf = max(stats.max_stream_rtf, rtf)
+        stats.max_chunk_rtf = max(stats.max_chunk_rtf, max_chunk_rtf)
+
+        stats.n_streams = stats.n_streams - 1
+
+
+class StatsServiceServicer(stt_service_pb2_grpc.StatsServiceServicer):
+
+    def GetStats(self, reqest, context):
+
+        return stt_service_pb2.StatsResponse(n_streams=stats.n_streams,
+                n_total_streams=stats.n_total_streams,
+                max_stream_rtf = stats.max_stream_rtf,
+                max_chunk_rtf = stats.max_chunk_rtf)
 
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor((os.cpu_count() or 1)))
-    stt_service_pb2_grpc.add_SttServiceServicer_to_server(
-        SttServiceServicer(), server)
+    stt_service_pb2_grpc.add_SttServiceServicer_to_server(SttServiceServicer(), server)
+    stt_service_pb2_grpc.add_StatsServiceServicer_to_server(StatsServiceServicer(), server)
+
     server.add_insecure_port('{}:{}'.format(vosk_interface, vosk_port))
     server.start()
     server.wait_for_termination()

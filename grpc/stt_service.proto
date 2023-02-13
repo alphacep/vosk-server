@@ -3,6 +3,7 @@ syntax = "proto3";
 package vosk.stt.v1;
 
 import "google/protobuf/duration.proto";
+import "google/protobuf/empty.proto";
 
 service SttService {
   rpc StreamingRecognize (stream StreamingRecognitionRequest) returns (stream StreamingRecognitionResponse) {
@@ -90,4 +91,16 @@ message WordInfo {
   google.protobuf.Duration end_time = 2;
   string word = 3;
   float confidence = 4;
+}
+
+service StatsService {
+  rpc GetStats (google.protobuf.Empty) returns (StatsResponse) {}
+}
+
+message StatsResponse {
+  int32 n_streams = 1;
+  int32 n_total_streams = 2;
+
+  float max_chunk_rtf = 4;
+  float max_stream_rtf = 6;
 }
