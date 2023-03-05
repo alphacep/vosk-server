@@ -78,10 +78,14 @@ async def start():
     args.interface = os.environ.get('VOSK_SERVER_INTERFACE', '0.0.0.0')
     args.port = int(os.environ.get('VOSK_SERVER_PORT', 2700))
     args.sample_rate = float(os.environ.get('VOSK_SAMPLE_RATE', 8000))
+    args.model_path = os.environ.get('VOSK_MODEL_PATH', 'model')
+
+    if len(sys.argv) > 1:
+       args.model_path = sys.argv[1]
 
     GpuInit()
 
-    model = BatchModel()
+    model = BatchModel(args.model_path)
 
     async with websockets.serve(recognize, args.interface, args.port):
         await asyncio.Future()
