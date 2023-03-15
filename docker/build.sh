@@ -9,6 +9,6 @@ for kind in ru en de cn fr es en-in grpc-en en-spk ja; do
     docker build --file Dockerfile.kaldi-${kind} --tag alphacep/kaldi-${kind}:latest .
 done
 
-for kind in vosk-server ru en de cn fr es en-in grpc-en en-spk; do
+for kind in vosk-server ru en de cn fr es en-in grpc-en en-spk ja; do
     docker push alphacep/kaldi-${kind}:latest
 done
