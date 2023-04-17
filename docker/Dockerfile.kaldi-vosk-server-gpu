@@ -16,11 +16,7 @@ RUN  apt-get update && \
         git \
         python3 \
         python3-dev \
-        python3-websockets \
-        python3-setuptools \
         python3-pip \
-        python3-wheel \
-        python3-cffi \
         zlib1g-dev \
         automake \
         autoconf \
@@ -50,6 +46,8 @@ RUN \
     && sed -i 's:-msse -msse2:-msse -msse2:g' kaldi.mk \
     && sed -i 's: -O1 : -O3 :g' kaldi.mk \
     && make -j $(nproc) online2 lm rnnlm cudafeat cudadecoder \
+    \
+    && pip3 install --upgrade websockets cffi \
     \
     && git clone https://github.com/alphacep/vosk-api /opt/vosk-api \
     && cd /opt/vosk-api/src \
