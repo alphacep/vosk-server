@@ -4,6 +4,7 @@ from asterisk.agi import *
 import os
 from websocket import create_connection
 import json
+import traceback
 
 AUDIO_FD = 3
 CONTENT_TYPE = 'audio/l16; rate=8000; channels=1'
@@ -38,6 +39,8 @@ def startAGI():
             if not data:
                 break
             process_chunk(agi, ws, data)
+    except Exception as err:
+        agi.verbose(''.join(traceback.format_exception(type(err), err, err.__traceback__)))
     finally:
         ws.close()
 
