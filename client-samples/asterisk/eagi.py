@@ -9,13 +9,13 @@ AUDIO_FD = 3
 CONTENT_TYPE = 'audio/l16; rate=8000; channels=1'
 ACCEPT = 'audio/pcm'
 
-
 def process_chunk(agi, ws, buf):
+    agi.verbose("Processing chunk")
     ws.send_binary(buf)
     res = json.loads(ws.recv())
+    agi.verbose(res)
     if 'result' in res:
         text = " ".join([w['word'] for w in res['result']])
-        agi.verbose(text)
         os.system("espeak -w /tmp/response22.wav \"" + text.encode('utf-8') + "\"")
         os.system("sox /tmp/response22.wav -r 8000 /tmp/response.wav")
         agi.stream_file("/tmp/response")
@@ -29,6 +29,9 @@ def startAGI():
     agi.verbose("Call answered from: %s to %s" % (ani, did))
 
     ws = create_connection("ws://localhost:2700")
+    ws.send('{ "config" : { "sample_rate" : 8000 } }')
+    agi.verbose("Connection created")
+
     try:
         while True:
             data = os.read(AUDIO_FD, 8000)
