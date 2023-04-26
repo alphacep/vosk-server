@@ -14,7 +14,7 @@ def process_chunk(agi, ws, buf):
     agi.verbose("Processing chunk")
     ws.send_binary(buf)
     res = json.loads(ws.recv())
-    agi.verbose(res)
+    agi.verbose("Result: " + str(res))
     if 'result' in res:
         text = " ".join([w['word'] for w in res['result']])
         os.system("espeak -w /tmp/response22.wav \"" + text.encode('utf-8') + "\"")
