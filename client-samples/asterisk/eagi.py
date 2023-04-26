@@ -40,7 +40,7 @@ def startAGI():
                 break
             process_chunk(agi, ws, data)
     except Exception as err:
-        agi.verbose(''.join(traceback.format_exception(type(err), err, err.__traceback__)))
+        agi.verbose(''.join(traceback.format_exception(type(err), err, err.__traceback__)).replace('\n', ' '))
     finally:
         ws.close()
 
