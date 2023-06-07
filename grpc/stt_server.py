@@ -41,6 +41,11 @@ vosk_port = int(os.environ.get('VOSK_SERVER_PORT', 5001))
 vosk_model_path = os.environ.get('VOSK_MODEL_PATH', 'model')
 vosk_sample_rate = float(os.environ.get('VOSK_SAMPLE_RATE', 8000))
 
+# Max concurrent calls.
+vosk_threads = int(os.environ.get('VOSK_SERVER_THREADS', os.cpu_count() or 1))
+# If set, return RESOURCE_EXHAUSTED when the concurrent call limit is exceeded.
+vosk_no_queue = os.environ.get('VOSK_SERVER_NO_QUEUE', '')
+
 if len(sys.argv) > 1:
    vosk_model_path = sys.argv[1]
 
@@ -150,7 +155,10 @@ class StatsServiceServicer(stt_service_pb2_grpc.StatsServiceServicer):
                 max_chunk_rtf = stats.max_chunk_rtf)
 
 def serve():
-    server = grpc.server(futures.ThreadPoolExecutor((os.cpu_count() or 1)))
+    if vosk_no_queue:
+       server = grpc.server(futures.ThreadPoolExecutor(vosk_threads), maximum_concurrent_rpcs=vosk_threads)
+    else:
+       server = grpc.server(futures.ThreadPoolExecutor(vosk_threads))
     stt_service_pb2_grpc.add_SttServiceServicer_to_server(SttServiceServicer(), server)
     stt_service_pb2_grpc.add_StatsServiceServicer_to_server(StatsServiceServicer(), server)
 
