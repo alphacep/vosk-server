@@ -1,16 +1,5 @@
 #!/usr/bin/python3
 
-"""Short example of how to use bridge objects.
-
-This example will create a holding bridge (if one doesn't already exist). Any
-channels that enter Stasis is placed into the bridge. Whenever a channel
-enters the bridge, a tone is played to the bridge.
-"""
-
-#
-# Copyright (c) 2013, Digium, Inc.
-#
-
 import anyio
 import asyncari
 import logging
