@@ -34,12 +34,12 @@ class Channel:
     async def init(self, client, channel):
         self.port = 45000 + len(channels)
         self.rec = vosk.KaldiRecognizer(model, 16000)
-        self.udp = aioudp.serve("localhost", self.port, self.rtp_handler)
+        self.udp = aioudp.serve("127.0.0.1", self.port, self.rtp_handler)
         await self.udp.__aenter__()
 
         bridge = await client.bridges.create(type='mixing')
         media_id = client.generate_id()
-        await client.channels.externalMedia(channelId=media_id, app=client._app, external_host='localhost:' + str(self.port), format='slin16')
+        await client.channels.externalMedia(channelId=media_id, app=client._app, external_host='127.0.0.1:' + str(self.port), format='slin16')
         await bridge.addChannel(channel=[media_id, channel.id])
 
 async def statis_handler(objs, ev, client):
