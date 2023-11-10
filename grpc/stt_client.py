@@ -15,6 +15,7 @@ def gen(audio_file_name):
         sample_rate_hertz=8000,
         enable_word_time_offsets=True,
         max_alternatives=5,
+        endpointer_mode='EP_VERY_LONG',
     )
     streaming_config = stt_service_pb2.RecognitionConfig(specification=specification)
 

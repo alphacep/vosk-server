@@ -30,7 +30,7 @@ import stt_service_pb2
 import stt_service_pb2_grpc
 from google.protobuf import duration_pb2
 
-from vosk import Model, KaldiRecognizer
+from vosk import Model, KaldiRecognizer, EndpointerMode
 
 # Uncomment for better memory usage
 # import gc
@@ -111,6 +111,7 @@ class SttServiceServicer(stt_service_pb2_grpc.SttServiceServicer):
         recognizer = KaldiRecognizer(self.model, sample_rate)
         recognizer.SetMaxAlternatives(request.config.specification.max_alternatives)
         recognizer.SetWords(request.config.specification.enable_word_time_offsets)
+        recognizer.SetEndpointerMode(EndpointerMode(request.config.specification.endpointer_mode))
 
         start_time = time.time()
         processed_bytes = 0

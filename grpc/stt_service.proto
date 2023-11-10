@@ -70,6 +70,21 @@ message RecognitionSpec {
   // `false`, no word-level time offset information is returned. The default is
   // `false`.
   bool enable_word_time_offsets = 12;
+
+  // Endpointer
+  enum EndpointerMode {
+    EP_DEFAULT = 0;
+    EP_SINGLE_WORD = 1;
+    EP_VERY_SHORT = 2;
+    EP_SHORT = 3;
+    EP_STANDARD = 4;
+    EP_STANDARD_5 = 5;
+    EP_STANDARD_180 = 6;
+    EP_LONG = 7;
+    EP_VERY_LONG = 8;
+    EP_VERY_LONG_180 = 9;
+  }
+  EndpointerMode endpointer_mode = 13;
 }
 
 message SpeechRecognitionChunk {
