@@ -79,3 +79,9 @@ same = n,Hangup()
 For more advanced chatbot, database interoperation and other callflow
 adjustments modify eagi.py according to your needs. You can also use
 PHP/Perl, see other examples in this package.
+
+
+## EAGI with PHP
+
+For EAGI with PHP on FreePBS see another example script eagi_phpagi.php.
+Thanks to Mihail Belobrov <mihail.belobrov@gmail.com> for contribution.
