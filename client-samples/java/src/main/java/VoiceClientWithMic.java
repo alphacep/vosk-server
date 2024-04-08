@@ -6,6 +6,9 @@ import javax.sound.sampled.DataLine;
 import javax.sound.sampled.TargetDataLine;
 import java.util.concurrent.*;
 import java.util.ArrayList;
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
 
 public class VoiceClientWithMic {
 
@@ -28,18 +31,35 @@ public class VoiceClientWithMic {
         ws.addListener(new CustomWebSocketAdapter());
         ws.connect();
 
-        byte[] buf = new byte[8000];
-        while (true) {
-            line.read(buf, 0, buf.length);
-            if (results.size() > 0 && results.get(results.size() - 1).contains("exit")) {
-                disconnect(ws);
-                break;
+        try {
+            AudioInputStream audioInputStream = new AudioInputStream(line);
+            AudioFormat format = audioInputStream.getFormat();
+            int bytesPerFrame = format.getFrameSize();
+            if (bytesPerFrame == AudioSystem.NOT_SPECIFIED) {
+                bytesPerFrame = 1;
             }
-            recieveLatch = new CountDownLatch(1);
-            ws.sendBinary(buf);
-            recieveLatch.await();
-        }
 
+            // Let Vosk server now the sample rate of sound file
+            ws.sendText("{ \"config\" : { \"sample_rate\" : " + (int)format.getSampleRate() + " } }");
+
+            // Set an arbitrary buffer size of 1024 frames.
+            int numBytes = 1024 * bytesPerFrame;
+            byte[] audioBytes = new byte[numBytes];
+            try {
+                int numBytesRead = 0;
+                // Try to read numBytes bytes from the file.
+                while ((numBytesRead = audioInputStream.read(audioBytes)) != -1) {
+                    recieveLatch = new CountDownLatch(1);
+                    ws.sendBinary(audioBytes);
+                    recieveLatch.await();
+                }
+                disconnect(ws);
+            } catch (Exception e) {
+                e.printStackTrace();
+	    }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
         return results;
     }
 
@@ -59,9 +79,9 @@ public class VoiceClientWithMic {
     private TargetDataLine getLine() {
         TargetDataLine line;
 
-        //It must be a 16 kHz (or 8 kHz, depending on the training data), 16bit Mono (= single channel) Little-Endian file
+        //It must be a 16 kHz (or 8 kHz, depending on the training data), 16bit Mono (= single channel) Big-Endian
         AudioFormat.Encoding encoding = AudioFormat.Encoding.PCM_SIGNED;
-        float rate = 8000.0f;
+        float rate = 16000.0f;
         int channels = 1;
         int sampleSize = 16;
         boolean bigEndian = false;
