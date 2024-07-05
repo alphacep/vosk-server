@@ -10,17 +10,20 @@ AUDIO_FD = 3
 CONTENT_TYPE = 'audio/l16; rate=8000; channels=1'
 ACCEPT = 'audio/pcm'
 
+def process_result(agi, text):
+    os.system("espeak -w /tmp/response22.wav \"" + text.encode('utf-8') + "\"")
+    os.system("sox /tmp/response22.wav -r 8000 /tmp/response.wav")
+    agi.stream_file("/tmp/response")
+    os.remove("/tmp/response.wav")
+
 def process_chunk(agi, ws, buf):
     agi.verbose("Processing chunk")
     ws.send_binary(buf)
     res = json.loads(ws.recv())
     agi.verbose("Result: " + str(res))
-    if 'result' in res:
-        text = " ".join([w['word'] for w in res['result']])
-        os.system("espeak -w /tmp/response22.wav \"" + text.encode('utf-8') + "\"")
-        os.system("sox /tmp/response22.wav -r 8000 /tmp/response.wav")
-        agi.stream_file("/tmp/response")
-        os.remove("/tmp/response.wav")
+    if "text" in res:
+        text = res.get("text")
+        process_result(agi, text)
 
 def startAGI():
     agi = AGI()
@@ -43,7 +46,10 @@ def startAGI():
         agi.verbose(''.join(traceback.format_exception(type(err), err, err.__traceback__)).replace('\n', ' '))
     finally:
         ws.send('{"eof" : 1}')
-        ws.recv()
+        res = json.loads(ws.recv())
+        if "text" in res:
+            text = res.get("text")
+            process_result(agi, text)
         ws.close()
 
 startAGI()
