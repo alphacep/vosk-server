@@ -42,6 +42,8 @@ def startAGI():
     except Exception as err:
         agi.verbose(''.join(traceback.format_exception(type(err), err, err.__traceback__)).replace('\n', ' '))
     finally:
+        ws.send('{"eof" : 1}')
+        ws.recv()
         ws.close()
 
 startAGI()
