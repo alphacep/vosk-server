@@ -1,0 +1,106 @@
+syntax = "proto3";
+
+package vosk.stt.v1;
+
+import "google/protobuf/duration.proto";
+import "google/protobuf/empty.proto";
+
+service SttService {
+  rpc StreamingRecognize (stream StreamingRecognitionRequest) returns (stream StreamingRecognitionResponse) {
+  }
+}
+
+message StreamingRecognitionRequest {
+  oneof streaming_request {
+    RecognitionConfig config = 1;
+    bytes audio_content = 2;
+  }
+}
+
+message StreamingRecognitionResponse {
+  repeated SpeechRecognitionChunk chunks = 1;
+  reserved 2;
+  reserved "end_of_single_utterance";
+}
+
+message RecognitionConfig {
+  RecognitionSpec specification = 1;
+}
+
+message RecognitionSpec {
+  enum AudioEncoding {
+    AUDIO_ENCODING_UNSPECIFIED = 0;
+
+    // 16-bit signed little-endian (Linear PCM)
+    LINEAR16_PCM = 1;
+  }
+
+  AudioEncoding audio_encoding = 1;
+
+  // 8000, 16000, 48000 only for pcm
+  int64 sample_rate_hertz = 2;
+
+  // code in BCP-47
+  string language_code = 3;
+
+  bool profanity_filter = 4;
+
+  string model = 5;
+
+  // If set true, tentative hypotheses may be returned as they become available (final=false flag)
+  // If false or omitted, only final=true result(s) are returned.
+  // Makes sense only for StreamingRecognize requests.
+  bool partial_results = 7;
+
+  bool single_utterance = 8;
+
+  // This mark allows disable normalization text
+  bool raw_results = 10;
+
+  // Maximum number of recognition hypotheses to be returned.
+  // Specifically, the maximum number of `SpeechRecognitionAlternative` messages
+  // within each `SpeechRecognitionResult`.
+  // The server may return fewer than `max_alternatives`.
+  // Valid values are `0`-`30`. A value of `0` or `1` will return a maximum of
+  // one. If omitted, will return a maximum of one.
+  int32 max_alternatives = 11;
+
+  // If `true`, the top result includes a list of words and
+  // the start and end time offsets (timestamps) for those words. If
+  // `false`, no word-level time offset information is returned. The default is
+  // `false`.
+  bool enable_word_time_offsets = 12;
+}
+
+message SpeechRecognitionChunk {
+  repeated SpeechRecognitionAlternative alternatives = 1;
+  // This flag shows that the received chunk contains a part of the recognized text that won't be changed.
+  bool final = 2;
+  // This flag shows that the received chunk is the end of an utterance.
+  bool end_of_utterance = 3;
+}
+
+message SpeechRecognitionAlternative {
+  string text = 1;
+  float confidence = 2;
+  repeated WordInfo words = 3;
+}
+
+message WordInfo {
+  google.protobuf.Duration start_time = 1;
+  google.protobuf.Duration end_time = 2;
+  string word = 3;
+  float confidence = 4;
+}
+
+service StatsService {
+  rpc GetStats (google.protobuf.Empty) returns (StatsResponse) {}
+}
+
+message StatsResponse {
+  int32 n_streams = 1;
+  int32 n_total_streams = 2;
+
+  float max_chunk_rtf = 4;
+  float max_stream_rtf = 6;
+}
