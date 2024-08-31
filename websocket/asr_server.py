@@ -11,9 +11,11 @@ import logging
 from vosk import Model, SpkModel, KaldiRecognizer
 
 def process_chunk(rec, message):
-    if message == '{"eof" : 1}':
+    message = json.loads(message) if isinstance(message, str) else message
+
+    if message == {"eof": 1}:
         return rec.FinalResult(), True
-    if message == '{"reset" : 1}':
+    if message == {"reset": 1}:
         return rec.FinalResult(), False
     elif rec.AcceptWaveform(message):
         return rec.Result(), False
