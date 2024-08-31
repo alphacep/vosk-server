@@ -26,6 +26,7 @@ import json
 import grpc
 import time
 import numpy as np
+import torch
 import torchaudio
 
 import stt_service_pb2
@@ -34,13 +35,8 @@ from google.protobuf import duration_pb2
 
 from vosk import Model, KaldiRecognizer
 
-from transformers import Wav2Vec2ForCTC, AutoProcessor
-import torch
-model_id = "mms-1b-fl102"
-processor = AutoProcessor.from_pretrained(model_id)
-model = Wav2Vec2ForCTC.from_pretrained(model_id)
-processor.tokenizer.set_target_lang("eng")
-model.load_adapter("eng")
+from transformers import Wav2Vec2ForCTC, Wav2Vec2Processor, Wav2Vec2ProcessorWithLM
+from pyctcdecode import build_ctcdecoder
 
 # Uncomment for better memory usage
 # import gc
@@ -63,7 +59,32 @@ qmutex = threading.Lock()
 in_queues = {}
 out_queues = {}
 
+
+
 def Worker():
+
+    model_id = "mms-model/mms-1b-fl102"
+    processor = Wav2Vec2Processor.from_pretrained(model_id)
+    model = Wav2Vec2ForCTC.from_pretrained(model_id)
+    processor.tokenizer.set_target_lang("eng")
+    model.load_adapter("eng")
+
+    vocab_dict = processor.tokenizer.get_vocab()
+    sorted_vocab_dict = {k.lower(): v for k, v in sorted(vocab_dict.items(), key=lambda item: item[1])}
+    print(sorted_vocab_dict)
+    unigrams = [x.strip() for x in open("mms-model/lms/en/en.vocab").readlines()]
+    decoder = build_ctcdecoder(
+        labels=list(sorted_vocab_dict.keys()),
+        kenlm_model_path="mms-model/lms/en/en.kenlm",
+        unigrams=unigrams,
+    )
+
+    processor_with_lm = Wav2Vec2ProcessorWithLM(
+        feature_extractor=processor.feature_extractor,
+        tokenizer=processor.tokenizer,
+        decoder=decoder
+    )
+
     while True:
         inputs_list = []
         keys_list = []
@@ -73,23 +94,22 @@ def Worker():
                 if q.empty():
                     continue
                 data = q.get_nowait()
-                inputs_list.append(data)
+                inputs = processor(data, sampling_rate=16_000, return_tensors="pt").input_values
+                inputs_list.append(inputs)
                 keys_list.append(key)
-                q.task_done
+                q.task_done()
 
         if len(inputs_list) == 0:
-            time.sleep(0.05)
+            time.sleep(0.1)
             continue
 
         print (f"Processing batch of {len(inputs_list)} chunks")
         inputs = torch.cat(inputs_list, dim=0)
         with torch.no_grad():
             logits = model(inputs).logits
-            pred_ids = torch.argmax(logits, dim=-1)
-            all_transcripts = processor.batch_decode(pred_ids)
-            with qmutex:
-                for key, transcription in zip(keys_list, all_transcripts):
-                    out_queues[key].put(transcription)
+            all_transcripts = processor_with_lm.batch_decode(logits.cpu().numpy()).text
+            for key, transcription in zip(keys_list, all_transcripts):
+                out_queues[key].put(transcription)
 
 class Stats:
     def __init__(self):
@@ -114,9 +134,8 @@ class SttServiceServicer(stt_service_pb2_grpc.SttServiceServicer):
     def get_response(self, uid, data, sampling_rate):
         speech_array = torch.frombuffer(np.array(data, copy=True), dtype=torch.int16).float()
         resampler = torchaudio.transforms.Resample(sampling_rate, 16_000)
-        sound = resampler(speech_array).squeeze().numpy()
-        inputs = processor(sound, sampling_rate=16_000, return_tensors="pt").input_values
-        in_queues[uid].put(inputs)
+        sound = resampler(speech_array).squeeze()
+        in_queues[uid].put(sound)
         print ("Added to ", uid)
         transcription = out_queues[uid].get()
         out_queues[uid].task_done() 
@@ -191,7 +210,8 @@ class StatsServiceServicer(stt_service_pb2_grpc.StatsServiceServicer):
                 max_chunk_rtf = stats.max_chunk_rtf)
 
 def serve():
-    server = grpc.server(futures.ThreadPoolExecutor(8))
+    pool_server = futures.ThreadPoolExecutor(8)
+    server = grpc.server(pool_server)
     stt_service_pb2_grpc.add_SttServiceServicer_to_server(SttServiceServicer(), server)
     stt_service_pb2_grpc.add_StatsServiceServicer_to_server(StatsServiceServicer(), server)
 
