@@ -11,7 +11,8 @@ RUN mkdir /opt/vosk-model-en \
    && wget https://alphacephei.com/vosk/models/vosk-model-spk-${SPK_MODEL_VERSION}.zip \
    && unzip vosk-model-spk-${SPK_MODEL_VERSION}.zip \
    && mv vosk-model-spk-${SPK_MODEL_VERSION} model-spk \
-   && rm -rf vosk-model-spk-${SPK_MODEL_VERSION}.zip
+   && rm -rf vosk-model-spk-${SPK_MODEL_VERSION}.zip \
+   && touch -h -r model . ..
 
 EXPOSE 2700
 WORKDIR /opt/vosk-server/websocket

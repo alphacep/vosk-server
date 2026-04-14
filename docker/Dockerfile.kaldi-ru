@@ -7,7 +7,8 @@ RUN mkdir /opt/vosk-model-ru \
    && unzip vosk-model-ru-${RUVERSION}.zip \
    && mv vosk-model-ru-${RUVERSION} model \
    && rm -rf model/extra \
-   && rm -rf vosk-model-ru-${RUVERSION}.zip
+   && rm -rf vosk-model-ru-${RUVERSION}.zip \
+   && touch -h -r model . ..
 
 EXPOSE 2700
 WORKDIR /opt/vosk-server/websocket

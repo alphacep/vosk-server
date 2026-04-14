@@ -6,7 +6,8 @@ RUN mkdir /opt/vosk-model-small-fr \
    && wget -q https://alphacephei.com/vosk/models/vosk-model-small-fr-${MODEL_VERSION}.zip \
    && unzip vosk-model-small-fr-${MODEL_VERSION}.zip \
    && mv vosk-model-small-fr-${MODEL_VERSION} model \
-   && rm vosk-model-small-fr-${MODEL_VERSION}.zip
+   && rm vosk-model-small-fr-${MODEL_VERSION}.zip \
+   && touch -h -r model . ..
 
 EXPOSE 2700
 WORKDIR /opt/vosk-server/websocket
